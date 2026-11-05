@@ -2,6 +2,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <!-- Permiso necesario para hacer peticiones HTTP -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
     <!-- Permisos agregados para la cámara y galería -->
     <uses-feature android:name="android.hardware.camera.any" />
     <uses-permission android:name="android.permission.CAMERA" />
