@@ -64,7 +64,8 @@ fun HomeScreen(
             widthSizeClass = windowSizeClass.widthSizeClass,
             onAlternarEstado = estadoViewModel::alternarEstado,
             onCerrarSesion = loginViewModel::cerrarSesion,
-            onIrAPerfil = { mainViewModel.navigateTo(Screen.Profile) }
+            onIrAPerfil = { mainViewModel.navigateTo(Screen.Profile) },
+            onIrAPosts = { mainViewModel.navigateTo(Screen.Posts) }
         )
     }
 }
@@ -80,7 +81,8 @@ fun HomeContenido(
     widthSizeClass: WindowWidthSizeClass,
     onAlternarEstado: () -> Unit,
     onCerrarSesion: () -> Unit,
-    onIrAPerfil: () -> Unit
+    onIrAPerfil: () -> Unit,
+    onIrAPosts: () -> Unit
 ) {
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -88,6 +90,9 @@ fun HomeContenido(
             TopAppBar(
                 title = { Text(text = "Modo Guardián") },
                 actions = {
+                    TextButton(onClick = onIrAPosts) {
+                        Text(text = "Posts")
+                    }
                     TextButton(onClick = onIrAPerfil) {
                         Text(text = "Perfil")
                     }
@@ -168,7 +173,8 @@ private fun HomeCompactPreview() {
             widthSizeClass = WindowWidthSizeClass.Compact,
             onAlternarEstado = {},
             onCerrarSesion = {},
-            onIrAPerfil = {}
+            onIrAPerfil = {},
+            onIrAPosts = {}
         )
     }
 }
@@ -186,7 +192,8 @@ private fun HomeExpandedPreview() {
             widthSizeClass = WindowWidthSizeClass.Expanded,
             onAlternarEstado = {},
             onCerrarSesion = {},
-            onIrAPerfil = {}
+            onIrAPerfil = {},
+            onIrAPosts = {}
         )
     }
 }
