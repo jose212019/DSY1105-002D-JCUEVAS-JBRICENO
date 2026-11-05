@@ -76,7 +76,7 @@ fun HomeScreen(
             cargandoEventos = cargandoEventos,
             errorEventos = errorEventos,
             onReintentarEventos = mainViewModel::cargarEventos,
-            puedeGestionar = rol.puedeGestionarEventos,
+            
             onCrearEvento = mainViewModel::crearEvento,
             onEliminarEvento = { mainViewModel.eliminarEvento(it.id) },
             onAlternarResuelto = mainViewModel::alternarResuelto,
@@ -107,7 +107,7 @@ fun HomeContenido(
     cargandoEventos: Boolean = false,
     errorEventos: String? = null,
     onReintentarEventos: () -> Unit = {},
-    puedeGestionar: Boolean = false,
+    
     onCrearEvento: (String, String) -> Unit = { _, _ -> },
     onEliminarEvento: (SecurityEvent) -> Unit = {},
     onAlternarResuelto: (SecurityEvent) -> Unit = {}
@@ -149,7 +149,7 @@ fun HomeContenido(
                         onAlternarEstado = onAlternarEstado
                     )
                 }
-                TarjetaEventos(eventos = eventos, cargando = cargandoEventos, error = errorEventos, onReintentar = onReintentarEventos, puedeGestionar = puedeGestionar, onCrear = onCrearEvento, onEliminar = onEliminarEvento, onAlternarResuelto = onAlternarResuelto)
+                TarjetaEventos(eventos = eventos, cargando = cargandoEventos, error = errorEventos, onReintentar = onReintentarEventos, puedeGestionar = rol.puedeGestionarEventos, onCrear = onCrearEvento, onEliminar = onEliminarEvento, onAlternarResuelto = onAlternarResuelto)
             }
         } else {
             Row(
@@ -176,7 +176,7 @@ fun HomeContenido(
                         .weight(1f)
                         .verticalScroll(rememberScrollState())
                 ) {
-                    TarjetaEventos(eventos = eventos, cargando = cargandoEventos, error = errorEventos, onReintentar = onReintentarEventos, puedeGestionar = puedeGestionar, onCrear = onCrearEvento, onEliminar = onEliminarEvento, onAlternarResuelto = onAlternarResuelto)
+                    TarjetaEventos(eventos = eventos, cargando = cargandoEventos, error = errorEventos, onReintentar = onReintentarEventos, puedeGestionar = rol.puedeGestionarEventos, onCrear = onCrearEvento, onEliminar = onEliminarEvento, onAlternarResuelto = onAlternarResuelto)
                 }
             }
         }

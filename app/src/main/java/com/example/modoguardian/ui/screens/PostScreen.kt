@@ -25,16 +25,33 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.example.modoguardian.data.model.Post
 import com.example.modoguardian.viewmodel.PostViewModel
 
-// Pantalla que lista los posts de la API, con estado de carga y error
-@OptIn(ExperimentalMaterial3Api::class)
+// Pantalla conectada al ViewModel: observa el estado y lo pasa al contenido visual
 @Composable
 fun PostScreen(viewModel: PostViewModel) {
     val posts by viewModel.postList.collectAsState()
     val cargando by viewModel.isLoading.collectAsState()
     val error by viewModel.error.collectAsState()
 
+    PostContenido(
+        posts = posts,
+        cargando = cargando,
+        error = error,
+        onReintentar = { viewModel.fetchPosts() }
+    )
+}
+
+// Contenido sin ViewModel (reutilizable y testeable): lista de posts, carga y error
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun PostContenido(
+    posts: List<Post>,
+    cargando: Boolean,
+    error: String?,
+    onReintentar: () -> Unit
+) {
     Scaffold(
         topBar = {
             TopAppBar(title = { Text(text = "Listado de Posts") })
@@ -58,8 +75,8 @@ fun PostScreen(viewModel: PostViewModel) {
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        Text(text = error ?: "")
-                        Button(onClick = { viewModel.fetchPosts() }) {
+                        Text(text = error)
+                        Button(onClick = onReintentar) {
                             Text(text = "Reintentar")
                         }
                     }
