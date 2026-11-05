@@ -10,9 +10,9 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 // Mantiene el estado de los posts obtenidos desde la API: lista, carga y error
-class PostViewModel : ViewModel() {
-
-    private val repository = PostRepository()
+class PostViewModel(
+    private val repository: PostRepository = PostRepository()
+) : ViewModel() {
 
     private val _postList = MutableStateFlow<List<Post>>(emptyList())
     val postList: StateFlow<List<Post>> = _postList

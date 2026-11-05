@@ -1,24 +1,25 @@
 package com.example.modoguardian.repository
 
 import com.example.modoguardian.data.model.Post
+import com.example.modoguardian.data.remote.ApiService
 import com.example.modoguardian.data.remote.RetrofitInstance
 
-// Accede a los datos de la API usando Retrofit
-class PostRepository {
+// Accede a los datos de la API usando Retrofit, recibe el ApiService para poder testearlo
+class PostRepository(private val api: ApiService = RetrofitInstance.api) {
 
     suspend fun getPosts(): List<Post> {
-        return RetrofitInstance.api.getPosts()
+        return api.getPosts()
     }
 
     suspend fun createPost(post: Post): Post {
-        return RetrofitInstance.api.createPost(post)
+        return api.createPost(post)
     }
 
     suspend fun updatePost(post: Post): Post {
-        return RetrofitInstance.api.updatePost(post.id, post)
+        return api.updatePost(post.id, post)
     }
 
     suspend fun deletePost(id: Int): Boolean {
-        return RetrofitInstance.api.deletePost(id).isSuccessful
+        return api.deletePost(id).isSuccessful
     }
 }
