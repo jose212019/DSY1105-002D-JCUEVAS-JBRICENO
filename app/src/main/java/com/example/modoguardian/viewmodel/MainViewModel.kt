@@ -15,9 +15,11 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 
 // Maneja la navegación y los eventos de seguridad (cargar, crear, actualizar y eliminar) con la API
-class MainViewModel : ViewModel() {
+class MainViewModel(
+    private val repository: SecurityRepository = SecurityRepository()
+) : ViewModel() {
 
-    private val repository = SecurityRepository()
+    
 
     private val _events = MutableStateFlow<List<SecurityEvent>>(emptyList())
     val events: StateFlow<List<SecurityEvent>> = _events
