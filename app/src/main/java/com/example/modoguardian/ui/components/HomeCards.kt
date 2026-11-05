@@ -137,7 +137,10 @@ fun TarjetaModoGuardian(
 @Composable
 fun TarjetaEventos(
     eventos: List<SecurityEvent>,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    cargando: Boolean = false,
+    error: String? = null,
+    onReintentar: () -> Unit = {}
 ) {
     Card(modifier = modifier.fillMaxWidth()) {
         Column(
@@ -148,17 +151,41 @@ fun TarjetaEventos(
                 text = "Eventos de seguridad",
                 style = MaterialTheme.typography.titleMedium
             )
-            eventos.forEachIndexed { indice, evento ->
-                if (indice > 0) HorizontalDivider()
-                Text(
-                    text = evento.title,
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.SemiBold
-                )
-                Text(
-                    text = evento.description,
-                    style = MaterialTheme.typography.bodyMedium
-                )
+            when {
+                cargando -> {
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        CircularProgressIndicator()
+                    }
+                }
+
+                error != null -> {
+                    Text(
+                        text = error,
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    Button(onClick = onReintentar) {
+                        Text(text = "Reintentar")
+                    }
+                }
+
+                else -> {
+                    eventos.forEachIndexed { indice, evento ->
+                        if (indice > 0) HorizontalDivider()
+                        Text(
+                            text = evento.title,
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                        Text(
+                            text = evento.description,
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
+                }
             }
         }
     }

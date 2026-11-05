@@ -47,6 +47,9 @@ fun HomeScreen(
     val estadoActivo by estadoViewModel.activo.collectAsState()
     val mostrarMensaje by estadoViewModel.mostrarMensaje.collectAsState()
     val windowSizeClass = obtenerWindowSizeClass()
+    val eventos by mainViewModel.events.collectAsState()
+    val cargandoEventos by mainViewModel.cargandoEventos.collectAsState()
+    val errorEventos by mainViewModel.errorEventos.collectAsState()
 
     val rol = estadoLogin.rol
 
@@ -58,7 +61,10 @@ fun HomeScreen(
         HomeContenido(
             rol = rol,
             email = estadoLogin.email,
-            eventos = mainViewModel.events,
+            eventos = eventos,
+            cargandoEventos = cargandoEventos,
+            errorEventos = errorEventos,
+            onReintentarEventos = mainViewModel::cargarEventos,
             estadoActivo = estadoActivo,
             mostrarMensaje = mostrarMensaje,
             widthSizeClass = windowSizeClass.widthSizeClass,
@@ -82,7 +88,10 @@ fun HomeContenido(
     onAlternarEstado: () -> Unit,
     onCerrarSesion: () -> Unit,
     onIrAPerfil: () -> Unit,
-    onIrAPosts: () -> Unit
+    onIrAPosts: () -> Unit,
+    cargandoEventos: Boolean = false,
+    errorEventos: String? = null,
+    onReintentarEventos: () -> Unit = {}
 ) {
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -121,7 +130,7 @@ fun HomeContenido(
                         onAlternarEstado = onAlternarEstado
                     )
                 }
-                TarjetaEventos(eventos = eventos)
+                TarjetaEventos(eventos = eventos, cargando = cargandoEventos, error = errorEventos, onReintentar = onReintentarEventos)
             }
         } else {
             Row(
@@ -148,7 +157,7 @@ fun HomeContenido(
                         .weight(1f)
                         .verticalScroll(rememberScrollState())
                 ) {
-                    TarjetaEventos(eventos = eventos)
+                    TarjetaEventos(eventos = eventos, cargando = cargandoEventos, error = errorEventos, onReintentar = onReintentarEventos)
                 }
             }
         }
