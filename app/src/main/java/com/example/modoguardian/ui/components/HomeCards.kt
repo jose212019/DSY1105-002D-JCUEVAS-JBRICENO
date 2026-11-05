@@ -16,6 +16,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.material3.TextButton
+import androidx.compose.foundation.layout.Row
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -140,8 +145,24 @@ fun TarjetaEventos(
     modifier: Modifier = Modifier,
     cargando: Boolean = false,
     error: String? = null,
-    onReintentar: () -> Unit = {}
+    onReintentar: () -> Unit = {},
+    puedeGestionar: Boolean = false,
+    onCrear: (String, String) -> Unit = { _, _ -> },
+    onEliminar: (SecurityEvent) -> Unit = {},
+    onAlternarResuelto: (SecurityEvent) -> Unit = {}
 ) {
+    var mostrarDialogo by remember { mutableStateOf(false) }
+
+    if (mostrarDialogo) {
+        DialogoNuevoEvento(
+            onConfirmar = { titulo, descripcion ->
+                onCrear(titulo, descripcion)
+                mostrarDialogo = false
+            },
+            onCancelar = { mostrarDialogo = false }
+        )
+    }
+
     Card(modifier = modifier.fillMaxWidth()) {
         Column(
             modifier = Modifier.padding(16.dp),
@@ -151,6 +172,11 @@ fun TarjetaEventos(
                 text = "Eventos de seguridad",
                 style = MaterialTheme.typography.titleMedium
             )
+            if (puedeGestionar) {
+                Button(onClick = { mostrarDialogo = true }) {
+                    Text(text = "Nuevo evento")
+                }
+            }
             when {
                 cargando -> {
                     Column(
@@ -176,7 +202,7 @@ fun TarjetaEventos(
                     eventos.forEachIndexed { indice, evento ->
                         if (indice > 0) HorizontalDivider()
                         Text(
-                            text = evento.title,
+                            text = if (evento.isResolved) "(Resuelto) ${evento.title}" else evento.title,
                             style = MaterialTheme.typography.titleSmall,
                             fontWeight = FontWeight.SemiBold
                         )
@@ -184,6 +210,16 @@ fun TarjetaEventos(
                             text = evento.description,
                             style = MaterialTheme.typography.bodyMedium
                         )
+                        if (puedeGestionar) {
+                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                TextButton(onClick = { onAlternarResuelto(evento) }) {
+                                    Text(text = if (evento.isResolved) "Reabrir" else "Marcar resuelto")
+                                }
+                                TextButton(onClick = { onEliminar(evento) }) {
+                                    Text(text = "Eliminar")
+                                }
+                            }
+                        }
                     }
                 }
             }

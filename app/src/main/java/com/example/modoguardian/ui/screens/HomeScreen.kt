@@ -18,6 +18,8 @@ import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSiz
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.platform.LocalContext
+import android.widget.Toast
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -50,6 +52,15 @@ fun HomeScreen(
     val eventos by mainViewModel.events.collectAsState()
     val cargandoEventos by mainViewModel.cargandoEventos.collectAsState()
     val errorEventos by mainViewModel.errorEventos.collectAsState()
+    val mensaje by mainViewModel.mensaje.collectAsState()
+    val context = LocalContext.current
+
+    LaunchedEffect(mensaje) {
+        mensaje?.let {
+            Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+            mainViewModel.limpiarMensaje()
+        }
+    }
 
     val rol = estadoLogin.rol
 
@@ -65,6 +76,10 @@ fun HomeScreen(
             cargandoEventos = cargandoEventos,
             errorEventos = errorEventos,
             onReintentarEventos = mainViewModel::cargarEventos,
+            puedeGestionar = rol.puedeGestionarEventos,
+            onCrearEvento = mainViewModel::crearEvento,
+            onEliminarEvento = { mainViewModel.eliminarEvento(it.id) },
+            onAlternarResuelto = mainViewModel::alternarResuelto,
             estadoActivo = estadoActivo,
             mostrarMensaje = mostrarMensaje,
             widthSizeClass = windowSizeClass.widthSizeClass,
@@ -91,7 +106,11 @@ fun HomeContenido(
     onIrAPosts: () -> Unit,
     cargandoEventos: Boolean = false,
     errorEventos: String? = null,
-    onReintentarEventos: () -> Unit = {}
+    onReintentarEventos: () -> Unit = {},
+    puedeGestionar: Boolean = false,
+    onCrearEvento: (String, String) -> Unit = { _, _ -> },
+    onEliminarEvento: (SecurityEvent) -> Unit = {},
+    onAlternarResuelto: (SecurityEvent) -> Unit = {}
 ) {
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -130,7 +149,7 @@ fun HomeContenido(
                         onAlternarEstado = onAlternarEstado
                     )
                 }
-                TarjetaEventos(eventos = eventos, cargando = cargandoEventos, error = errorEventos, onReintentar = onReintentarEventos)
+                TarjetaEventos(eventos = eventos, cargando = cargandoEventos, error = errorEventos, onReintentar = onReintentarEventos, puedeGestionar = puedeGestionar, onCrear = onCrearEvento, onEliminar = onEliminarEvento, onAlternarResuelto = onAlternarResuelto)
             }
         } else {
             Row(
@@ -157,7 +176,7 @@ fun HomeContenido(
                         .weight(1f)
                         .verticalScroll(rememberScrollState())
                 ) {
-                    TarjetaEventos(eventos = eventos, cargando = cargandoEventos, error = errorEventos, onReintentar = onReintentarEventos)
+                    TarjetaEventos(eventos = eventos, cargando = cargandoEventos, error = errorEventos, onReintentar = onReintentarEventos, puedeGestionar = puedeGestionar, onCrear = onCrearEvento, onEliminar = onEliminarEvento, onAlternarResuelto = onAlternarResuelto)
                 }
             }
         }
