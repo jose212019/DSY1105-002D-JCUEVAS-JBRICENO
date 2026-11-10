@@ -4,6 +4,7 @@ import androidx.activity.ComponentActivity
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
@@ -47,7 +48,7 @@ class HomeScreenTest {
                     widthSizeClass = WindowWidthSizeClass.Compact,
                     onAlternarEstado = {},
                     onCerrarSesion = onCerrarSesion,
-                    onIrAPerfil = {},
+                    
                     onIrAPosts = onIrAPosts,
                     cargandoEventos = cargando,
                     errorEventos = error,
@@ -109,7 +110,7 @@ class HomeScreenTest {
         var navego = false
         mostrarHome(Rol.ADMIN, onIrAPosts = { navego = true })
 
-        composeRule.onNodeWithText("Posts").performClick()
+        composeRule.onNodeWithContentDescription("Posts").performClick()
 
         assertTrue(navego)
     }
@@ -119,7 +120,7 @@ class HomeScreenTest {
         var cerro = false
         mostrarHome(Rol.ADMIN, onCerrarSesion = { cerro = true })
 
-        composeRule.onNodeWithText("Cerrar sesión").performClick()
+        composeRule.onNodeWithContentDescription("Cerrar sesión").performClick()
 
         assertTrue(cerro)
     }
