@@ -7,9 +7,6 @@ import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -20,7 +17,6 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.example.modoguardian.navigation.Screen
 import com.example.modoguardian.ui.components.ImagenInteligente
 import com.example.modoguardian.viewmodel.MainViewModel
 import com.example.modoguardian.viewmodel.PerfilViewModel
@@ -33,9 +29,6 @@ fun ProfileScreen(
     viewModel: MainViewModel,
     perfilViewModel: PerfilViewModel = viewModel()
 ) {
-    val items = listOf(Screen.Home, Screen.Profile)
-    var selectedItem by remember { mutableStateOf(1) }
-
     val context = LocalContext.current
     val imagenUri by perfilViewModel.imagenUri.collectAsState()
     var uriCamaraTemporal by remember { mutableStateOf<Uri?>(null) }
@@ -76,26 +69,7 @@ fun ProfileScreen(
     }
 
     Scaffold(
-        bottomBar = {
-            NavigationBar {
-                items.forEachIndexed { index, screen ->
-                    NavigationBarItem(
-                        selected = selectedItem == index,
-                        onClick = {
-                            selectedItem = index
-                            viewModel.navigateTo(screen)
-                        },
-                        label = { Text(screen.route) },
-                        icon = {
-                            Icon(
-                                imageVector = if (screen == Screen.Home) Icons.Default.Home else Icons.Default.Person,
-                                contentDescription = screen.route
-                            )
-                        }
-                    )
-                }
-            }
-        }
+        contentWindowInsets = WindowInsets.systemBars.only(WindowInsetsSides.Top)
     ) { innerPadding ->
         Column(
             modifier = Modifier
