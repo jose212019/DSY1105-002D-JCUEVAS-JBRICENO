@@ -3,6 +3,7 @@ package com.example.modoguardian.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.modoguardian.model.SecurityEvent
+import com.example.modoguardian.model.Severidad
 import com.example.modoguardian.navigation.NavigationEvent
 import com.example.modoguardian.navigation.Screen
 import com.example.modoguardian.repository.SecurityRepository
@@ -18,8 +19,6 @@ import kotlinx.coroutines.launch
 class MainViewModel(
     private val repository: SecurityRepository = SecurityRepository()
 ) : ViewModel() {
-
-    
 
     private val _events = MutableStateFlow<List<SecurityEvent>>(emptyList())
     val events: StateFlow<List<SecurityEvent>> = _events
@@ -60,13 +59,16 @@ class MainViewModel(
         }
     }
 
-    fun crearEvento(titulo: String, descripcion: String) {
+    fun crearEvento(
+        titulo: String,
+        descripcion: String,
+        severidad: Severidad = Severidad.BAJA,
+        camara: String = ""
+    ) {
         viewModelScope.launch {
             try {
-                val creado = repository.createEvent(titulo.trim(), descripcion.trim())
-                val mayorId = _events.value.maxOfOrNull { it.id.toIntOrNull() ?: 0 } ?: 0
-                val nuevoId = maxOf(creado.id.toIntOrNull() ?: 0, mayorId + 1)
-                _events.value = listOf(creado.copy(id = nuevoId.toString())) + _events.value
+                val creado = repository.createEvent(titulo.trim(), descripcion.trim(), severidad, camara)
+                _events.value = listOf(creado) + _events.value
                 _mensaje.value = "Evento creado"
             } catch (e: CancellationException) {
                 throw e
@@ -97,8 +99,7 @@ class MainViewModel(
         viewModelScope.launch {
             try {
                 val actualizado = evento.copy(isResolved = !evento.isResolved)
-                val existeEnApi = (evento.id.toIntOrNull() ?: 0) in 1..100
-                if (existeEnApi) repository.updateEvent(actualizado)
+                repository.updateEvent(actualizado)
                 _events.value = _events.value.map { if (it.id == evento.id) actualizado else it }
                 _mensaje.value = "Evento actualizado"
             } catch (e: CancellationException) {

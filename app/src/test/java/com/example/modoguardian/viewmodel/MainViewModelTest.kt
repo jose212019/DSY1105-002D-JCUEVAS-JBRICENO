@@ -66,35 +66,23 @@ class MainViewModelTest : StringSpec({
         viewModel.events.value shouldContainExactly eventosIniciales
     }
 
-    "crearEvento() debe agregar el evento al inicio de la lista" {
+    "crearEvento() debe agregar el evento creado por la API al inicio de la lista" {
         val repo = repoConEventos()
-        coEvery { repo.createEvent("Nuevo", "Detalle") } returns
-            SecurityEvent(id = "101", title = "Nuevo", description = "Detalle")
+        coEvery { repo.createEvent("Nuevo", "Detalle", any(), any()) } returns
+            SecurityEvent(id = "16", title = "Nuevo", description = "Detalle")
 
         val viewModel = MainViewModel(repo)
         viewModel.crearEvento("  Nuevo ", " Detalle ")
 
         viewModel.events.value shouldHaveSize 3
-        viewModel.events.value.first().id shouldBe "101"
+        viewModel.events.value.first().id shouldBe "16"
         viewModel.events.value.first().title shouldBe "Nuevo"
         viewModel.mensaje.value shouldBe "Evento creado"
     }
 
-    "crearEvento() debe asignar un id único aunque la API repita el 101" {
-        val repo = repoConEventos()
-        coEvery { repo.createEvent(any(), any()) } returns
-            SecurityEvent(id = "101", title = "Nuevo", description = "Detalle")
-
-        val viewModel = MainViewModel(repo)
-        viewModel.crearEvento("Nuevo", "Detalle")
-        viewModel.crearEvento("Nuevo", "Detalle")
-
-        viewModel.events.value.map { it.id } shouldContainExactly listOf("102", "101", "1", "2")
-    }
-
     "crearEvento() debe publicar un mensaje de error si la API falla" {
         val repo = repoConEventos()
-        coEvery { repo.createEvent(any(), any()) } throws RuntimeException("sin red")
+        coEvery { repo.createEvent(any(), any(), any(), any()) } throws RuntimeException("sin red")
 
         val viewModel = MainViewModel(repo)
         viewModel.crearEvento("Nuevo", "Detalle")
@@ -125,7 +113,7 @@ class MainViewModelTest : StringSpec({
         viewModel.mensaje.value shouldBe "No se pudo eliminar el evento"
     }
 
-    "alternarResuelto() debe marcar el evento como resuelto y llamar a la API" {
+    "alternarResuelto() debe marcar el evento como resuelto y guardarlo en la API" {
         val repo = repoConEventos()
         coEvery { repo.updateEvent(any()) } returns eventosIniciales[0]
 
@@ -137,17 +125,27 @@ class MainViewModelTest : StringSpec({
         coVerify(exactly = 1) { repo.updateEvent(any()) }
     }
 
-    "alternarResuelto() no debe llamar a la API con eventos creados localmente" {
-        val repo = repoConEventos()
-        coEvery { repo.createEvent(any(), any()) } returns
-            SecurityEvent(id = "101", title = "Nuevo", description = "Detalle")
+    "alternarResuelto() debe reabrir un evento que ya estaba resuelto" {
+        val resuelto = SecurityEvent(id = "1", title = "Evento 1", description = "Descripción 1", isResolved = true)
+        val repo = mockk<SecurityRepository>()
+        coEvery { repo.getSecurityEvents() } returns listOf(resuelto)
+        coEvery { repo.updateEvent(any()) } returns resuelto
 
         val viewModel = MainViewModel(repo)
-        viewModel.crearEvento("Nuevo", "Detalle")
-        viewModel.alternarResuelto(viewModel.events.value.first())
+        viewModel.alternarResuelto(resuelto)
 
-        viewModel.events.value.first().isResolved shouldBe true
-        coVerify(exactly = 0) { repo.updateEvent(any()) }
+        viewModel.events.value.first().isResolved shouldBe false
+    }
+
+    "alternarResuelto() no debe cambiar el evento si la API falla" {
+        val repo = repoConEventos()
+        coEvery { repo.updateEvent(any()) } throws RuntimeException("sin red")
+
+        val viewModel = MainViewModel(repo)
+        viewModel.alternarResuelto(eventosIniciales[0])
+
+        viewModel.events.value.first { it.id == "1" }.isResolved shouldBe false
+        viewModel.mensaje.value shouldBe "No se pudo actualizar el evento"
     }
 
     "limpiarMensaje() debe dejar el mensaje en null" {

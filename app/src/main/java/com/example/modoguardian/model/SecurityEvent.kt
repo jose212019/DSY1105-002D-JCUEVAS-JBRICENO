@@ -5,5 +5,7 @@ data class SecurityEvent(
     val title: String,
     val description: String,
     val timestamp: Long = System.currentTimeMillis(),
-    val isResolved: Boolean = false
+    val isResolved: Boolean = false,
+    val severidad: Severidad = Severidad.BAJA,
+    val camara: String = ""
 )
