@@ -9,40 +9,43 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 
+// Foto de perfil circular: muestra la imagen elegida o un ícono por defecto con los colores del tema
 @Composable
-fun ImagenInteligente(imagenUri: Uri?, modifier: Modifier = Modifier) {
-    // Caja base con forma circular
+fun ImagenInteligente(
+    imagenUri: Uri?,
+    modifier: Modifier = Modifier,
+    tamano: Dp = 150.dp
+) {
     Box(
         modifier = modifier
-            .size(150.dp) // Tamaño de la foto de perfil
-            .clip(CircleShape) // Recorte circular
-            .background(Color.LightGray), // Fondo por si no hay foto
+            .size(tamano)
+            .clip(CircleShape)
+            .background(MaterialTheme.colorScheme.surfaceVariant),
         contentAlignment = Alignment.Center
     ) {
         if (imagenUri != null) {
-            // Si hay una foto (cámara o galería), la mostramos con Coil
             AsyncImage(
                 model = imagenUri,
                 contentDescription = "Foto de perfil",
                 modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.Crop // Ajusta la imagen al círculo
+                contentScale = ContentScale.Crop
             )
         } else {
-            // Si no hay foto, mostramos un icono por defecto
             Icon(
                 imageVector = Icons.Default.Person,
                 contentDescription = "Icono por defecto",
-                modifier = Modifier.size(80.dp),
-                tint = Color.Gray
+                modifier = Modifier.size(tamano * 0.5f),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
     }

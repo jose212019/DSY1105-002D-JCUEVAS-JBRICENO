@@ -5,11 +5,14 @@ import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -18,6 +21,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.example.modoguardian.model.ModoTema
 import com.example.modoguardian.navigation.NavigationEvent
 import com.example.modoguardian.navigation.Screen
 import com.example.modoguardian.ui.components.BarraNavegacion
@@ -33,8 +37,9 @@ import com.example.modoguardian.viewmodel.LoginViewModel
 import com.example.modoguardian.viewmodel.MainViewModel
 import com.example.modoguardian.viewmodel.PerfilViewModel
 import com.example.modoguardian.viewmodel.PostViewModel
+import com.example.modoguardian.viewmodel.TemaViewModel
 
-// Actividad principal: navegación con barra inferior de cinco pestañas y ViewModels compartidos
+// Actividad principal: tema claro u oscuro elegido por el usuario, navegación con barra inferior y ViewModels compartidos
 class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -44,7 +49,29 @@ class MainActivity : ComponentActivity() {
             navigationBarStyle = SystemBarStyle.dark(android.graphics.Color.TRANSPARENT)
         )
         setContent {
-            ModoGuardianTheme {
+            val temaViewModel: TemaViewModel = viewModel()
+            val modoTema by temaViewModel.modo.collectAsState()
+            val oscuro = when (modoTema) {
+                ModoTema.AUTOMATICO -> isSystemInDarkTheme()
+                ModoTema.CLARO -> false
+                ModoTema.OSCURO -> true
+            }
+
+            DisposableEffect(oscuro) {
+                this@MainActivity.enableEdgeToEdge(
+                    statusBarStyle = SystemBarStyle.auto(
+                        android.graphics.Color.TRANSPARENT,
+                        android.graphics.Color.TRANSPARENT
+                    ) { oscuro },
+                    navigationBarStyle = SystemBarStyle.auto(
+                        android.graphics.Color.TRANSPARENT,
+                        android.graphics.Color.TRANSPARENT
+                    ) { oscuro }
+                )
+                onDispose { }
+            }
+
+            ModoGuardianTheme(darkTheme = oscuro) {
                 val navController = rememberNavController()
 
                 val mainViewModel: MainViewModel = viewModel()
@@ -123,9 +150,10 @@ class MainActivity : ComponentActivity() {
                         composable(Screen.Alerts.route) { AlertasScreen() }
                         composable(Screen.Profile.route) {
                             ProfileScreen(
-                                navController = navController,
-                                viewModel = mainViewModel,
-                                perfilViewModel = perfilViewModel
+                                loginViewModel = loginViewModel,
+                                mainViewModel = mainViewModel,
+                                perfilViewModel = perfilViewModel,
+                                temaViewModel = temaViewModel
                             )
                         }
                         composable(Screen.Posts.route) {
