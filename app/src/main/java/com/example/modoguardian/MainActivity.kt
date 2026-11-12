@@ -30,6 +30,7 @@ import com.example.modoguardian.navigation.Screen
 import com.example.modoguardian.ui.components.BarraNavegacion
 import com.example.modoguardian.ui.screens.AlertaDetalleScreen
 import com.example.modoguardian.ui.screens.AlertasScreen
+import com.example.modoguardian.ui.screens.CamaraDetalleScreen
 import com.example.modoguardian.ui.screens.CamarasScreen
 import com.example.modoguardian.ui.screens.EventosScreen
 import com.example.modoguardian.ui.screens.HomeScreen
@@ -37,6 +38,7 @@ import com.example.modoguardian.ui.screens.LoginScreen
 import com.example.modoguardian.ui.screens.PostScreen
 import com.example.modoguardian.ui.screens.ProfileScreen
 import com.example.modoguardian.ui.theme.ModoGuardianTheme
+import com.example.modoguardian.viewmodel.CamarasViewModel
 import com.example.modoguardian.viewmodel.LoginViewModel
 import com.example.modoguardian.viewmodel.MainViewModel
 import com.example.modoguardian.viewmodel.PerfilViewModel
@@ -82,6 +84,7 @@ class MainActivity : ComponentActivity() {
                 val loginViewModel: LoginViewModel = viewModel()
                 val perfilViewModel: PerfilViewModel = viewModel()
                 val postViewModel: PostViewModel = viewModel()
+                val camarasViewModel: CamarasViewModel = viewModel()
 
                 val eventos by mainViewModel.events.collectAsState()
                 val alertasPendientes = eventos.count { it.severidad == Severidad.ALTA && !it.isResolved }
@@ -153,7 +156,15 @@ class MainActivity : ComponentActivity() {
                                 mainViewModel = mainViewModel
                             )
                         }
-                        composable(Screen.Cameras.route) { CamarasScreen() }
+                        composable(Screen.Cameras.route) {
+                            CamarasScreen(
+                                camarasViewModel = camarasViewModel,
+                                mainViewModel = mainViewModel,
+                                onAbrirCamara = { id ->
+                                    navController.navigate(Screen.CameraDetail.crearRuta(id))
+                                }
+                            )
+                        }
                         composable(Screen.Events.route) {
                             EventosScreen(
                                 loginViewModel = loginViewModel,
@@ -175,6 +186,17 @@ class MainActivity : ComponentActivity() {
                             AlertaDetalleScreen(
                                 idAlerta = entrada.arguments?.getString("id"),
                                 loginViewModel = loginViewModel,
+                                mainViewModel = mainViewModel,
+                                onVolver = { navController.popBackStack() }
+                            )
+                        }
+                        composable(
+                            route = Screen.CameraDetail.route,
+                            arguments = listOf(navArgument("id") { type = NavType.StringType })
+                        ) { entrada ->
+                            CamaraDetalleScreen(
+                                idCamara = entrada.arguments?.getString("id"),
+                                camarasViewModel = camarasViewModel,
                                 mainViewModel = mainViewModel,
                                 onVolver = { navController.popBackStack() }
                             )

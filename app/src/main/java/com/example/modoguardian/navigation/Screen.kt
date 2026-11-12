@@ -13,4 +13,8 @@ sealed class Screen(val route: String) {
     data object AlertDetail : Screen(route = "alert_detail/{id}") {
         fun crearRuta(id: String): String = "alert_detail/$id"
     }
+
+    data object CameraDetail : Screen(route = "camera_detail/{id}") {
+        fun crearRuta(id: String): String = "camera_detail/$id"
+    }
 }
