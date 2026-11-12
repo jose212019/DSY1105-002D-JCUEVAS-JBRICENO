@@ -138,7 +138,7 @@ fun HomeContenido(
                 }
                 ResumenEventos(eventos = eventos)
                 TarjetaEventos(
-                    eventos = eventos,
+                    eventos = eventos.take(5),
                     cargando = cargandoEventos,
                     error = errorEventos,
                     onReintentar = onReintentarEventos,
@@ -180,7 +180,7 @@ fun HomeContenido(
                         .verticalScroll(rememberScrollState())
                 ) {
                     TarjetaEventos(
-                        eventos = eventos,
+                        eventos = eventos.take(5),
                         cargando = cargandoEventos,
                         error = errorEventos,
                         onReintentar = onReintentarEventos,

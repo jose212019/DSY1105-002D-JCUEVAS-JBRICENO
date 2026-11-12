@@ -17,14 +17,18 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.example.modoguardian.model.ModoTema
+import com.example.modoguardian.model.Severidad
 import com.example.modoguardian.navigation.NavigationEvent
 import com.example.modoguardian.navigation.Screen
 import com.example.modoguardian.ui.components.BarraNavegacion
+import com.example.modoguardian.ui.screens.AlertaDetalleScreen
 import com.example.modoguardian.ui.screens.AlertasScreen
 import com.example.modoguardian.ui.screens.CamarasScreen
 import com.example.modoguardian.ui.screens.EventosScreen
@@ -39,7 +43,7 @@ import com.example.modoguardian.viewmodel.PerfilViewModel
 import com.example.modoguardian.viewmodel.PostViewModel
 import com.example.modoguardian.viewmodel.TemaViewModel
 
-// Actividad principal: tema claro u oscuro elegido por el usuario, navegación con barra inferior y ViewModels compartidos
+// Actividad principal: tema elegido por el usuario, navegación con barra inferior y burbuja de alertas críticas
 class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -79,6 +83,9 @@ class MainActivity : ComponentActivity() {
                 val perfilViewModel: PerfilViewModel = viewModel()
                 val postViewModel: PostViewModel = viewModel()
 
+                val eventos by mainViewModel.events.collectAsState()
+                val alertasPendientes = eventos.count { it.severidad == Severidad.ALTA && !it.isResolved }
+
                 val entradaActual by navController.currentBackStackEntryAsState()
                 val rutaActual = entradaActual?.destination?.route
                 val rutasConBarra = listOf(
@@ -117,6 +124,7 @@ class MainActivity : ComponentActivity() {
                         if (rutaActual in rutasConBarra) {
                             BarraNavegacion(
                                 rutaActual = rutaActual,
+                                alertasPendientes = alertasPendientes,
                                 onSeleccionar = { destino ->
                                     navController.navigate(destino.route) {
                                         popUpTo(Screen.Home.route) { saveState = true }
@@ -146,8 +154,31 @@ class MainActivity : ComponentActivity() {
                             )
                         }
                         composable(Screen.Cameras.route) { CamarasScreen() }
-                        composable(Screen.Events.route) { EventosScreen() }
-                        composable(Screen.Alerts.route) { AlertasScreen() }
+                        composable(Screen.Events.route) {
+                            EventosScreen(
+                                loginViewModel = loginViewModel,
+                                mainViewModel = mainViewModel
+                            )
+                        }
+                        composable(Screen.Alerts.route) {
+                            AlertasScreen(
+                                mainViewModel = mainViewModel,
+                                onAbrirAlerta = { id ->
+                                    navController.navigate(Screen.AlertDetail.crearRuta(id))
+                                }
+                            )
+                        }
+                        composable(
+                            route = Screen.AlertDetail.route,
+                            arguments = listOf(navArgument("id") { type = NavType.StringType })
+                        ) { entrada ->
+                            AlertaDetalleScreen(
+                                idAlerta = entrada.arguments?.getString("id"),
+                                loginViewModel = loginViewModel,
+                                mainViewModel = mainViewModel,
+                                onVolver = { navController.popBackStack() }
+                            )
+                        }
                         composable(Screen.Profile.route) {
                             ProfileScreen(
                                 loginViewModel = loginViewModel,

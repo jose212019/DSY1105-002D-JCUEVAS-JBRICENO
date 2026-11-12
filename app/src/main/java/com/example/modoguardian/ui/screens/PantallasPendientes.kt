@@ -9,8 +9,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Checklist
-import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Videocam
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -18,13 +16,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 
-// Pantallas provisorias de Cámaras, Eventos y Alertas mientras se construyen
+// Pantalla provisoria de Cámaras mientras se construye
 @Composable
-private fun PantallaEnConstruccion(titulo: String, icono: ImageVector) {
+fun CamarasScreen() {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -34,13 +31,13 @@ private fun PantallaEnConstruccion(titulo: String, icono: ImageVector) {
         verticalArrangement = Arrangement.Center
     ) {
         Icon(
-            imageVector = icono,
+            imageVector = Icons.Filled.Videocam,
             contentDescription = null,
             tint = MaterialTheme.colorScheme.primary,
             modifier = Modifier.size(56.dp)
         )
         Spacer(modifier = Modifier.height(16.dp))
-        Text(text = titulo, style = MaterialTheme.typography.titleLarge)
+        Text(text = "Cámaras", style = MaterialTheme.typography.titleLarge)
         Spacer(modifier = Modifier.height(8.dp))
         Text(
             text = "Esta pantalla se construye en los próximos pasos.",
@@ -49,19 +46,4 @@ private fun PantallaEnConstruccion(titulo: String, icono: ImageVector) {
             textAlign = TextAlign.Center
         )
     }
-}
-
-@Composable
-fun CamarasScreen() {
-    PantallaEnConstruccion(titulo = "Cámaras", icono = Icons.Filled.Videocam)
-}
-
-@Composable
-fun EventosScreen() {
-    PantallaEnConstruccion(titulo = "Eventos", icono = Icons.Filled.Checklist)
-}
-
-@Composable
-fun AlertasScreen() {
-    PantallaEnConstruccion(titulo = "Alertas", icono = Icons.Filled.Notifications)
 }
