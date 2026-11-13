@@ -4,52 +4,61 @@ import com.example.modoguardian.model.ResultadoAuth
 import com.example.modoguardian.model.Rol
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
-import kotlinx.coroutines.test.runTest
+import io.mockk.coEvery
+import io.mockk.coVerify
+import io.mockk.mockk
+import io.mockk.verify
 
-// Pruebas de AuthRepository: login por rol, credenciales inválidas y simulación sin conexión
+// Pruebas de AuthRepository con un AuthService simulado con MockK
 class AuthRepositoryTest : StringSpec({
 
-    val repo = AuthRepository()
+    "un inicio de sesión correcto devuelve el rol que entrega el servicio" {
+        val servicio = mockk<AuthService>()
+        coEvery { servicio.iniciarSesion("admin@guardian.test", "123456") } returns ResultadoAuth.Exito(Rol.ADMIN)
 
-    "admin con credenciales correctas debe entrar con rol ADMIN" {
-        runTest {
-            repo.autenticar("admin@guardian.test", "123456", false) shouldBe ResultadoAuth.Exito(Rol.ADMIN)
-        }
+        val resultado = AuthRepository(servicio).autenticar("admin@guardian.test", "123456", false)
+
+        resultado shouldBe ResultadoAuth.Exito(Rol.ADMIN)
     }
 
-    "supervisor con credenciales correctas debe entrar con rol SUPERVISOR" {
-        runTest {
-            repo.autenticar("supervisor@guardian.test", "123456", false) shouldBe ResultadoAuth.Exito(Rol.SUPERVISOR)
-        }
+    "el correo se limpia: sin espacios y en minúsculas antes de llamar al servicio" {
+        val servicio = mockk<AuthService>()
+        coEvery { servicio.iniciarSesion("operador@guardian.test", "123456") } returns ResultadoAuth.Exito(Rol.OPERADOR)
+
+        val resultado = AuthRepository(servicio).autenticar("  OPERADOR@Guardian.Test ", "123456", false)
+
+        resultado shouldBe ResultadoAuth.Exito(Rol.OPERADOR)
+        coVerify(exactly = 1) { servicio.iniciarSesion("operador@guardian.test", "123456") }
     }
 
-    "operador con credenciales correctas debe entrar con rol OPERADOR" {
-        runTest {
-            repo.autenticar("operador@guardian.test", "123456", false) shouldBe ResultadoAuth.Exito(Rol.OPERADOR)
-        }
+    "las credenciales inválidas del servicio se propagan tal cual" {
+        val servicio = mockk<AuthService>()
+        coEvery { servicio.iniciarSesion(any(), any()) } returns ResultadoAuth.CredencialesInvalidas
+
+        AuthRepository(servicio).autenticar("admin@guardian.test", "clave-mala", false) shouldBe ResultadoAuth.CredencialesInvalidas
     }
 
-    "el correo debe aceptarse sin importar mayúsculas ni espacios" {
-        runTest {
-            repo.autenticar("  ADMIN@Guardian.Test ", "123456", false) shouldBe ResultadoAuth.Exito(Rol.ADMIN)
-        }
+    "un error de conexión del servicio se propaga tal cual" {
+        val servicio = mockk<AuthService>()
+        coEvery { servicio.iniciarSesion(any(), any()) } returns ResultadoAuth.SinConexion
+
+        AuthRepository(servicio).autenticar("admin@guardian.test", "123456", false) shouldBe ResultadoAuth.SinConexion
     }
 
-    "una contraseña incorrecta debe devolver CredencialesInvalidas" {
-        runTest {
-            repo.autenticar("admin@guardian.test", "clave-mala", false) shouldBe ResultadoAuth.CredencialesInvalidas
-        }
+    "con la simulación de conexión caída devuelve SinConexion y no llama al servicio" {
+        val servicio = mockk<AuthService>()
+
+        val resultado = AuthRepository(servicio).autenticar("admin@guardian.test", "123456", true)
+
+        resultado shouldBe ResultadoAuth.SinConexion
+        coVerify(exactly = 0) { servicio.iniciarSesion(any(), any()) }
     }
 
-    "un correo que no existe debe devolver CredencialesInvalidas" {
-        runTest {
-            repo.autenticar("otro@guardian.test", "123456", false) shouldBe ResultadoAuth.CredencialesInvalidas
-        }
-    }
+    "cerrarSesion() delega en el servicio" {
+        val servicio = mockk<AuthService>(relaxed = true)
 
-    "con la simulación de conexión caída debe devolver SinConexion" {
-        runTest {
-            repo.autenticar("admin@guardian.test", "123456", true) shouldBe ResultadoAuth.SinConexion
-        }
+        AuthRepository(servicio).cerrarSesion()
+
+        verify(exactly = 1) { servicio.cerrarSesion() }
     }
 })

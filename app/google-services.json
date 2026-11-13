@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "768525698172",
+    "project_id": "modoguardian-v2",
+    "storage_bucket": "modoguardian-v2.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:768525698172:android:d32e19bf5a2984180f35f9",
+        "android_client_info": {
+          "package_name": "com.example.modoguardian"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCkP6tGxu4_7o_-OCKbnDSl8uTrHG1uxoE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

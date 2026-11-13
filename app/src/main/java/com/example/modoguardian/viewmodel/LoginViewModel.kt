@@ -153,6 +153,7 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
 
 
     fun cerrarSesion() {
+        authRepository.cerrarSesion()
         _estado.update {
             it.copy(rol = null, password = "", isLoading = false, errores = LoginErrores())
         }

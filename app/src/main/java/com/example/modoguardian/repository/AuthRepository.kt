@@ -1,37 +1,22 @@
 package com.example.modoguardian.repository
 
 import com.example.modoguardian.model.ResultadoAuth
-import com.example.modoguardian.model.Rol
-import com.example.modoguardian.model.Usuario
-import kotlinx.coroutines.delay
 
-// usuarios ficticios
-class AuthRepository {
-
-    private val usuariosPrueba = listOf(
-        Usuario(email = "admin@guardian.test", password = "123456", rol = Rol.ADMIN),
-        Usuario(email = "supervisor@guardian.test", password = "123456", rol = Rol.SUPERVISOR),
-        Usuario(email = "operador@guardian.test", password = "123456", rol = Rol.OPERADOR)
-    )
+// Repositorio de autenticación: normaliza el correo, maneja la simulación sin conexión y delega en el servicio
+class AuthRepository(private val servicio: AuthService = FirebaseAuthService()) {
 
     suspend fun autenticar(
         email: String,
         password: String,
         simularSinConexion: Boolean
     ): ResultadoAuth {
-
-        delay(timeMillis = 1500)
-
-        // Simula una caída de conexion
+        // Interruptor de demostración: simula una caída de conexión sin llamar al servicio
         if (simularSinConexion) return ResultadoAuth.SinConexion
 
-        val usuario = usuariosPrueba.firstOrNull {
-            it.email.equals(email.trim(), ignoreCase = true) && it.password == password
-        }
-        return if (usuario != null) {
-            ResultadoAuth.Exito(usuario.rol)
-        } else {
-            ResultadoAuth.CredencialesInvalidas
-        }
+        return servicio.iniciarSesion(email.trim().lowercase(), password)
+    }
+
+    fun cerrarSesion() {
+        servicio.cerrarSesion()
     }
 }
