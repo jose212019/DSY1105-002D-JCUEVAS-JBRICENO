@@ -16,6 +16,10 @@ class AuthRepository(private val servicio: AuthService = FirebaseAuthService()) 
         return servicio.iniciarSesion(email.trim().lowercase(), password)
     }
 
+    suspend fun autenticarConGoogle(idToken: String): ResultadoAuth {
+        return servicio.iniciarSesionConGoogle(idToken)
+    }
+
     fun cerrarSesion() {
         servicio.cerrarSesion()
     }

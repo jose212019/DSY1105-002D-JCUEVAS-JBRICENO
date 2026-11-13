@@ -32,7 +32,7 @@ android {
     }
 }
 
-// Dependencias del proyecto, con Firebase (login y roles), Retrofit y las librerías de testing
+// Dependencias del proyecto, con Firebase y Google (login y roles), Retrofit y las librerías de testing
 dependencies {
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.activity.compose)
@@ -57,6 +57,9 @@ dependencies {
     implementation("com.google.firebase:firebase-auth")
     implementation("com.google.firebase:firebase-firestore")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.8.0")
+    implementation("androidx.credentials:credentials:1.3.0")
+    implementation("androidx.credentials:credentials-play-services-auth:1.3.0")
+    implementation("com.google.android.libraries.identity.googleid:googleid:1.1.1")
 
     testImplementation(libs.junit)
     testImplementation("io.kotest:kotest-runner-junit5:5.8.0")

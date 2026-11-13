@@ -54,6 +54,23 @@ class AuthRepositoryTest : StringSpec({
         coVerify(exactly = 0) { servicio.iniciarSesion(any(), any()) }
     }
 
+    "autenticarConGoogle() entrega el token al servicio y devuelve su resultado" {
+        val servicio = mockk<AuthService>()
+        coEvery { servicio.iniciarSesionConGoogle("token-123") } returns ResultadoAuth.Exito(Rol.OPERADOR, "alguien@gmail.com")
+
+        val resultado = AuthRepository(servicio).autenticarConGoogle("token-123")
+
+        resultado shouldBe ResultadoAuth.Exito(Rol.OPERADOR, "alguien@gmail.com")
+        coVerify(exactly = 1) { servicio.iniciarSesionConGoogle("token-123") }
+    }
+
+    "autenticarConGoogle() propaga cuando el servicio niega el acceso" {
+        val servicio = mockk<AuthService>()
+        coEvery { servicio.iniciarSesionConGoogle(any()) } returns ResultadoAuth.CredencialesInvalidas
+
+        AuthRepository(servicio).autenticarConGoogle("token-123") shouldBe ResultadoAuth.CredencialesInvalidas
+    }
+
     "cerrarSesion() delega en el servicio" {
         val servicio = mockk<AuthService>(relaxed = true)
 

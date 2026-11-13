@@ -152,6 +152,47 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
     }
 
 
+    fun iniciarSesionConGoogle(idToken: String, onExito: () -> Unit) {
+        if (_estado.value.isLoading) return
+        _estado.update { it.copy(isLoading = true, errores = LoginErrores()) }
+
+        viewModelScope.launch {
+            val resultado: ResultadoAuth = try {
+                authRepository.autenticarConGoogle(idToken)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                ResultadoAuth.ErrorInesperado
+            }
+
+            when (resultado) {
+                is ResultadoAuth.Exito -> {
+                    _estado.update {
+                        it.copy(
+                            isLoading = false,
+                            rol = resultado.rol,
+                            email = resultado.email ?: it.email,
+                            password = ""
+                        )
+                    }
+                    onExito()
+                }
+
+                ResultadoAuth.CredencialesInvalidas -> mostrarErrorGeneral(
+                    "Tu cuenta no tiene acceso a ModoGuardian"
+                )
+
+                ResultadoAuth.SinConexion -> mostrarErrorGeneral(
+                    "Sin conexión. Revisa tu red e inténtalo de nuevo"
+                )
+
+                ResultadoAuth.ErrorInesperado -> mostrarErrorGeneral(
+                    "Ocurrió un error inesperado. Inténtalo nuevamente"
+                )
+            }
+        }
+    }
+
     fun cerrarSesion() {
         authRepository.cerrarSesion()
         _estado.update {

@@ -70,7 +70,11 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.runtime.rememberCoroutineScope
 import com.example.modoguardian.R
+import com.example.modoguardian.data.GoogleSignInHelper
+import com.example.modoguardian.data.ResultadoGoogle
+import kotlinx.coroutines.launch
 import com.example.modoguardian.model.LoginErrores
 import com.example.modoguardian.model.LoginUiState
 import com.example.modoguardian.navigation.Screen
@@ -87,6 +91,20 @@ fun LoginScreen(
     val estado by loginViewModel.estado.collectAsState()
     val windowSizeClass = obtenerWindowSizeClass()
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val iniciarGoogle: () -> Unit = {
+        scope.launch {
+            val ayudante = GoogleSignInHelper(context.getString(R.string.default_web_client_id))
+            when (val resultado = ayudante.obtenerIdToken(context)) {
+                is ResultadoGoogle.Token -> loginViewModel.iniciarSesionConGoogle(resultado.idToken) {
+                    mainViewModel.navigateTo(Screen.Home, limpiarPila = true)
+                }
+                ResultadoGoogle.Cancelado -> Unit
+                ResultadoGoogle.SinCuentas -> Toast.makeText(context, "No hay cuentas de Google en este dispositivo", Toast.LENGTH_SHORT).show()
+                ResultadoGoogle.Error -> Toast.makeText(context, "No se pudo iniciar con Google. Inténtalo de nuevo", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
 
     LoginContenido(
         estado = estado,
@@ -100,7 +118,7 @@ fun LoginScreen(
             }
         },
         onGoogle = {
-            Toast.makeText(context, "El inicio con Google estará disponible pronto", Toast.LENGTH_SHORT).show()
+            iniciarGoogle()
         },
         onCrearCuenta = {
             Toast.makeText(context, "El registro de cuentas estará disponible pronto", Toast.LENGTH_SHORT).show()
