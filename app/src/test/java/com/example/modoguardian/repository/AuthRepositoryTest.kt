@@ -8,6 +8,8 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
 import io.mockk.verify
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.test.runTest
 
 // Pruebas de AuthRepository con un AuthService simulado con MockK
 class AuthRepositoryTest : StringSpec({
@@ -69,6 +71,18 @@ class AuthRepositoryTest : StringSpec({
         coEvery { servicio.iniciarSesionConGoogle(any()) } returns ResultadoAuth.CredencialesInvalidas
 
         AuthRepository(servicio).autenticarConGoogle("token-123") shouldBe ResultadoAuth.CredencialesInvalidas
+    }
+
+    "si el servicio tarda demasiado, devuelve SinConexion en vez de quedarse cargando" {
+        runTest {
+            val servicio = mockk<AuthService>()
+            coEvery { servicio.iniciarSesionConGoogle(any()) } coAnswers {
+                delay(60_000)
+                ResultadoAuth.Exito(Rol.OPERADOR)
+            }
+
+            AuthRepository(servicio).autenticarConGoogle("token-123") shouldBe ResultadoAuth.SinConexion
+        }
     }
 
     "cerrarSesion() delega en el servicio" {
