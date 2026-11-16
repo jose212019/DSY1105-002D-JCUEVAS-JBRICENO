@@ -6,6 +6,7 @@ import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -14,8 +15,12 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -23,16 +28,20 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.example.modoguardian.data.local.AppDatabase
 import com.example.modoguardian.model.ModoTema
 import com.example.modoguardian.model.Severidad
 import com.example.modoguardian.navigation.NavigationEvent
 import com.example.modoguardian.navigation.Screen
+import com.example.modoguardian.repository.SecurityRepository
+import com.example.modoguardian.ui.components.AvisoDatosGuardados
 import com.example.modoguardian.ui.components.BarraNavegacion
 import com.example.modoguardian.ui.screens.AlertaDetalleScreen
 import com.example.modoguardian.ui.screens.AlertasScreen
 import com.example.modoguardian.ui.screens.CamaraDetalleScreen
 import com.example.modoguardian.ui.screens.CamarasScreen
 import com.example.modoguardian.ui.screens.EventosScreen
+import com.example.modoguardian.ui.screens.HistorialScreen
 import com.example.modoguardian.ui.screens.HomeScreen
 import com.example.modoguardian.ui.screens.LoginScreen
 import com.example.modoguardian.ui.screens.PostScreen
@@ -45,7 +54,7 @@ import com.example.modoguardian.viewmodel.PerfilViewModel
 import com.example.modoguardian.viewmodel.PostViewModel
 import com.example.modoguardian.viewmodel.TemaViewModel
 
-// Actividad principal: tema elegido por el usuario, navegación con barra inferior y burbuja de alertas críticas
+// Actividad principal: tema elegido, base de datos local, navegación con barra inferior y aviso de datos guardados
 class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -79,14 +88,32 @@ class MainActivity : ComponentActivity() {
 
             ModoGuardianTheme(darkTheme = oscuro) {
                 val navController = rememberNavController()
+                val contexto = LocalContext.current
+                val baseDatos = remember { AppDatabase.obtener(contexto) }
 
-                val mainViewModel: MainViewModel = viewModel()
+                val mainViewModel: MainViewModel = viewModel(
+                    factory = viewModelFactory {
+                        initializer {
+                            MainViewModel(
+                                SecurityRepository(
+                                    eventoDao = baseDatos.eventoDao(),
+                                    accionDao = baseDatos.accionDao()
+                                )
+                            )
+                        }
+                    }
+                )
                 val loginViewModel: LoginViewModel = viewModel()
                 val perfilViewModel: PerfilViewModel = viewModel()
+                val estadoLogin by loginViewModel.estado.collectAsState()
+                LaunchedEffect(estadoLogin.email, estadoLogin.rol) {
+                    mainViewModel.establecerUsuario(estadoLogin.email, estadoLogin.rol)
+                }
                 val postViewModel: PostViewModel = viewModel()
                 val camarasViewModel: CamarasViewModel = viewModel()
 
                 val eventos by mainViewModel.events.collectAsState()
+                val datosGuardados by mainViewModel.mostrandoDatosGuardados.collectAsState()
                 val alertasPendientes = eventos.count { it.severidad == Severidad.ALTA && !it.isResolved }
 
                 val entradaActual by navController.currentBackStackEntryAsState()
@@ -98,6 +125,12 @@ class MainActivity : ComponentActivity() {
                     Screen.Alerts.route,
                     Screen.Profile.route
                 )
+
+                LaunchedEffect(rutaActual) {
+                    if (rutaActual == Screen.Events.route) {
+                        mainViewModel.cargarEventos(silencioso = true)
+                    }
+                }
 
                 LaunchedEffect(Unit) {
                     mainViewModel.navigationEvent.collect { evento ->
@@ -125,17 +158,22 @@ class MainActivity : ComponentActivity() {
                     contentWindowInsets = WindowInsets(0, 0, 0, 0),
                     bottomBar = {
                         if (rutaActual in rutasConBarra) {
-                            BarraNavegacion(
-                                rutaActual = rutaActual,
-                                alertasPendientes = alertasPendientes,
-                                onSeleccionar = { destino ->
-                                    navController.navigate(destino.route) {
-                                        popUpTo(Screen.Home.route) { saveState = true }
-                                        launchSingleTop = true
-                                        restoreState = true
-                                    }
+                            Column {
+                                if (datosGuardados) {
+                                    AvisoDatosGuardados(onReintentar = { mainViewModel.cargarEventos() })
                                 }
-                            )
+                                BarraNavegacion(
+                                    rutaActual = rutaActual,
+                                    alertasPendientes = alertasPendientes,
+                                    onSeleccionar = { destino ->
+                                        navController.navigate(destino.route) {
+                                            popUpTo(Screen.Home.route) { saveState = true }
+                                            launchSingleTop = true
+                                            restoreState = true
+                                        }
+                                    }
+                                )
+                            }
                         }
                     }
                 ) { innerPadding ->
@@ -206,7 +244,14 @@ class MainActivity : ComponentActivity() {
                                 loginViewModel = loginViewModel,
                                 mainViewModel = mainViewModel,
                                 perfilViewModel = perfilViewModel,
-                                temaViewModel = temaViewModel
+                                temaViewModel = temaViewModel,
+                                onAbrirHistorial = { navController.navigate(Screen.History.route) }
+                            )
+                        }
+                        composable(Screen.History.route) {
+                            HistorialScreen(
+                                mainViewModel = mainViewModel,
+                                onVolver = { navController.popBackStack() }
                             )
                         }
                         composable(Screen.Posts.route) {

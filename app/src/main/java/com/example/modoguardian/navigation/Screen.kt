@@ -7,6 +7,7 @@ sealed class Screen(val route: String) {
     data object Events : Screen(route = "events_page")
     data object Alerts : Screen(route = "alerts_page")
     data object Profile : Screen(route = "profile_page")
+    data object History : Screen(route = "history_page")
     data object Settings : Screen(route = "settings_page")
     data object Posts : Screen(route = "posts_page")
 

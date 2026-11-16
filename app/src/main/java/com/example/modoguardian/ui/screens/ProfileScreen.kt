@@ -29,6 +29,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material3.Button
@@ -73,13 +74,14 @@ import com.example.modoguardian.viewmodel.PerfilViewModel
 import com.example.modoguardian.viewmodel.TemaViewModel
 import java.io.File
 
-// Perfil conectado a los ViewModels: maneja la foto (galería o cámara con permiso), el tema y el cierre de sesión
+// Perfil conectado a los ViewModels: foto (galería o cámara con permiso), historial, tema y cierre de sesión
 @Composable
 fun ProfileScreen(
     loginViewModel: LoginViewModel,
     mainViewModel: MainViewModel,
     perfilViewModel: PerfilViewModel = viewModel(),
-    temaViewModel: TemaViewModel = viewModel()
+    temaViewModel: TemaViewModel = viewModel(),
+    onAbrirHistorial: () -> Unit = {}
 ) {
     val context = LocalContext.current
     val estadoLogin by loginViewModel.estado.collectAsState()
@@ -147,6 +149,7 @@ fun ProfileScreen(
                     launcherPermisoCamara.launch(Manifest.permission.CAMERA)
                 }
             },
+            onAbrirHistorial = onAbrirHistorial,
             onCambiarTema = temaViewModel::cambiarModo,
             onCerrarSesion = loginViewModel::cerrarSesion
         )
@@ -161,6 +164,7 @@ fun PerfilContenido(
     modoTema: ModoTema,
     onGaleria: () -> Unit,
     onCamara: () -> Unit,
+    onAbrirHistorial: () -> Unit,
     onCambiarTema: (ModoTema) -> Unit,
     onCerrarSesion: () -> Unit
 ) {
@@ -237,6 +241,18 @@ fun PerfilContenido(
                             Text(text = modulo, style = MaterialTheme.typography.bodyLarge)
                         }
                     }
+                }
+            }
+
+            if (rol.puedeGestionarEventos) {
+                TituloSeccion(texto = "TRAZABILIDAD")
+                Card(modifier = Modifier.fillMaxWidth()) {
+                    FilaAccion(
+                        icono = Icons.Filled.History,
+                        titulo = "Historial de acciones",
+                        subtitulo = "Quién hizo qué sobre cada evento",
+                        onClick = onAbrirHistorial
+                    )
                 }
             }
 
@@ -341,7 +357,7 @@ private fun FilaAccion(
     )
 }
 
-@Preview(name = "Perfil Admin", widthDp = 360, heightDp = 900, showBackground = true)
+@Preview(name = "Perfil Admin", widthDp = 360, heightDp = 1000, showBackground = true)
 @Composable
 private fun PerfilPreview() {
     ModoGuardianTheme {
@@ -352,6 +368,7 @@ private fun PerfilPreview() {
             modoTema = ModoTema.OSCURO,
             onGaleria = {},
             onCamara = {},
+            onAbrirHistorial = {},
             onCambiarTema = {},
             onCerrarSesion = {}
         )
