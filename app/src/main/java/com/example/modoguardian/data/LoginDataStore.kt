@@ -17,6 +17,12 @@ class LoginDataStore(private val context: Context) {
         }
     }
 
+    suspend fun limpiarUltimoEmail() {
+        context.dataStore.edit { preferencias ->
+            preferencias.remove(ultimoEmailKey)
+        }
+    }
+
     fun obtenerUltimoEmail(): Flow<String?> {
         return context.dataStore.data.map { preferencias ->
             preferencias[ultimoEmailKey]

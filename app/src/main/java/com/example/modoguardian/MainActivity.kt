@@ -255,7 +255,10 @@ class MainActivity : ComponentActivity() {
                             )
                         }
                         composable(Screen.Posts.route) {
-                            PostScreen(viewModel = postViewModel)
+                            PostScreen(
+                                viewModel = postViewModel,
+                                onVolver = { navController.popBackStack() }
+                            )
                         }
                     }
                 }

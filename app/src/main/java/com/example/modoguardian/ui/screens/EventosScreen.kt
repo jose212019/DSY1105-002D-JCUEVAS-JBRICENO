@@ -190,6 +190,21 @@ fun EventosContenido(
                     )
                 }
 
+                if (!puedeGestionar) {
+                    Surface(
+                        shape = MaterialTheme.shapes.small,
+                        color = MaterialTheme.colorScheme.secondaryContainer,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(
+                            text = "Tu rol es de solo lectura: puedes consultar los eventos, pero no crearlos, resolverlos ni eliminarlos.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSecondaryContainer,
+                            modifier = Modifier.padding(12.dp)
+                        )
+                    }
+                }
+
                 Row(
                     modifier = Modifier.horizontalScroll(rememberScrollState()),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -414,6 +429,9 @@ private fun EventoItem(
                         )
                         Spacer(modifier = Modifier.weight(1f))
                         if (puedeGestionar) {
+                            TextButton(onClick = { onAlternarResuelto(evento) }) {
+                                Text(text = if (evento.isResolved) "Reabrir" else "Resolver")
+                            }
                             IconButton(
                                 onClick = { confirmarEliminar = true },
                                 modifier = Modifier.size(32.dp)

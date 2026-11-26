@@ -195,8 +195,15 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
 
     fun cerrarSesion() {
         authRepository.cerrarSesion()
-        _estado.update {
-            it.copy(rol = null, password = "", isLoading = false, errores = LoginErrores())
+        // Se reinicia todo el formulario para que no quede el correo de la sesión anterior
+        _estado.value = LoginUiState()
+        viewModelScope.launch {
+            try {
+                loginDataStore.limpiarUltimoEmail()
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+            }
         }
     }
 }
