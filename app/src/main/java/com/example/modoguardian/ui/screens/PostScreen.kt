@@ -12,6 +12,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -22,14 +23,19 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.modoguardian.data.model.Post
+import com.example.modoguardian.model.Severidad
 import com.example.modoguardian.viewmodel.PostViewModel
 
 // Pantalla conectada al ViewModel: observa el estado y lo pasa al contenido visual
@@ -58,6 +64,39 @@ fun PostContenido(
     onReintentar: () -> Unit,
     onVolver: (() -> Unit)? = null
 ) {
+    var seleccionado by remember { mutableStateOf<Post?>(null) }
+
+    seleccionado?.let { post ->
+        AlertDialog(
+            onDismissRequest = { seleccionado = null },
+            title = { Text(text = post.title) },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(text = post.body)
+                    if (!post.camara.isNullOrBlank()) {
+                        Text(
+                            text = "C\u00e1mara: ${post.camara}",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    if (post.severidad != null) {
+                        Text(
+                            text = "Severidad: ${Severidad.desdeClave(post.severidad).etiqueta}",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { seleccionado = null }) {
+                    Text(text = "Cerrar")
+                }
+            }
+        )
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -108,6 +147,7 @@ fun PostContenido(
                     ) {
                         items(posts) { post ->
                             Card(
+                                onClick = { seleccionado = post },
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(vertical = 8.dp),
