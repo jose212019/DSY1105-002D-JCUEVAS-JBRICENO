@@ -1,6 +1,7 @@
 package com.example.modoguardian.repository
 
 import com.example.modoguardian.model.ResultadoAuth
+import com.example.modoguardian.model.ResultadoRegistro
 import kotlinx.coroutines.withTimeoutOrNull
 
 private const val TIEMPO_MAXIMO_MS = 20_000L
@@ -25,6 +26,19 @@ class AuthRepository(private val servicio: AuthService = FirebaseAuthService()) 
         return withTimeoutOrNull(TIEMPO_MAXIMO_MS) {
             servicio.iniciarSesionConGoogle(idToken)
         } ?: ResultadoAuth.SinConexion
+    }
+
+    suspend fun registrar(
+        nombre: String,
+        email: String,
+        password: String,
+        simularSinConexion: Boolean
+    ): ResultadoRegistro {
+        if (simularSinConexion) return ResultadoRegistro.SinConexion
+
+        return withTimeoutOrNull(TIEMPO_MAXIMO_MS) {
+            servicio.registrar(nombre.trim(), email.trim().lowercase(), password)
+        } ?: ResultadoRegistro.SinConexion
     }
 
     fun cerrarSesion() {

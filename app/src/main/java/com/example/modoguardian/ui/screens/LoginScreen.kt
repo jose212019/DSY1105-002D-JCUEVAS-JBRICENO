@@ -78,6 +78,7 @@ import kotlinx.coroutines.launch
 import com.example.modoguardian.model.LoginErrores
 import com.example.modoguardian.model.LoginUiState
 import com.example.modoguardian.navigation.Screen
+import com.example.modoguardian.ui.components.DialogoRegistro
 import com.example.modoguardian.ui.theme.ModoGuardianTheme
 import com.example.modoguardian.ui.utils.obtenerWindowSizeClass
 import com.example.modoguardian.viewmodel.LoginViewModel
@@ -92,6 +93,7 @@ fun LoginScreen(
     val windowSizeClass = obtenerWindowSizeClass()
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+    var mostrarRegistro by remember { mutableStateOf(false) }
     val iniciarGoogle: () -> Unit = {
         scope.launch {
             val ayudante = GoogleSignInHelper(context.getString(R.string.default_web_client_id))
@@ -121,9 +123,27 @@ fun LoginScreen(
             iniciarGoogle()
         },
         onCrearCuenta = {
-            Toast.makeText(context, "El registro de cuentas estará disponible pronto", Toast.LENGTH_SHORT).show()
+            loginViewModel.limpiarErrores()
+            mostrarRegistro = true
         }
     )
+
+    if (mostrarRegistro) {
+        DialogoRegistro(
+            cargando = estado.isLoading,
+            errorGeneral = estado.errores.general,
+            onRegistrar = { nombre, email, password ->
+                loginViewModel.registrarse(nombre, email, password) {
+                    mostrarRegistro = false
+                    mainViewModel.navigateTo(Screen.Home, limpiarPila = true)
+                }
+            },
+            onCancelar = {
+                loginViewModel.limpiarErrores()
+                mostrarRegistro = false
+            }
+        )
+    }
 }
 
 // Pantalla de login adaptable: celular en una columna, tablet y horizontal en una tarjeta con dos columnas

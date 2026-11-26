@@ -8,6 +8,7 @@ import com.example.modoguardian.data.LoginDataStore
 import com.example.modoguardian.model.LoginErrores
 import com.example.modoguardian.model.LoginUiState
 import com.example.modoguardian.model.ResultadoAuth
+import com.example.modoguardian.model.ResultadoRegistro
 import com.example.modoguardian.repository.AuthRepository
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -188,6 +189,56 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
 
                 ResultadoAuth.ErrorInesperado -> mostrarErrorGeneral(
                     "Ocurrió un error inesperado. Inténtalo nuevamente"
+                )
+            }
+        }
+    }
+
+    fun limpiarErrores() {
+        _estado.update { it.copy(errores = LoginErrores()) }
+    }
+
+    fun registrarse(nombre: String, email: String, password: String, onExito: () -> Unit) {
+        if (_estado.value.isLoading) return
+        val simular = _estado.value.simularSinConexion
+        _estado.update { it.copy(isLoading = true, errores = LoginErrores()) }
+
+        viewModelScope.launch {
+            val resultado: ResultadoRegistro = try {
+                authRepository.registrar(nombre, email, password, simular)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                ResultadoRegistro.ErrorInesperado
+            }
+
+            when (resultado) {
+                is ResultadoRegistro.Exito -> {
+                    _estado.update {
+                        it.copy(
+                            isLoading = false,
+                            rol = resultado.rol,
+                            email = resultado.email,
+                            password = ""
+                        )
+                    }
+                    onExito()
+                }
+
+                ResultadoRegistro.CorreoEnUso -> mostrarErrorGeneral(
+                    "Ya existe una cuenta con ese correo"
+                )
+
+                ResultadoRegistro.ContrasenaDebil -> mostrarErrorGeneral(
+                    "La contrase\u00f1a es muy d\u00e9bil. Usa al menos 6 caracteres"
+                )
+
+                ResultadoRegistro.SinConexion -> mostrarErrorGeneral(
+                    "Sin conexi\u00f3n. Revisa tu red e int\u00e9ntalo de nuevo"
+                )
+
+                ResultadoRegistro.ErrorInesperado -> mostrarErrorGeneral(
+                    "No se pudo crear la cuenta. Int\u00e9ntalo nuevamente"
                 )
             }
         }

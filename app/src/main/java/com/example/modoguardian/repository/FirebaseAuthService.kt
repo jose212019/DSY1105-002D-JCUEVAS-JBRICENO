@@ -1,11 +1,14 @@
 package com.example.modoguardian.repository
 
 import com.example.modoguardian.model.ResultadoAuth
+import com.example.modoguardian.model.ResultadoRegistro
 import com.example.modoguardian.model.Rol
 import com.google.firebase.FirebaseNetworkException
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseAuthInvalidUserException
+import com.google.firebase.auth.FirebaseAuthUserCollisionException
+import com.google.firebase.auth.FirebaseAuthWeakPasswordException
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.FirebaseFirestoreException
@@ -48,6 +51,37 @@ class FirebaseAuthService(
         }
     }
 
+    // Crea la cuenta en Firebase y su ficha en usuarios con el rol de menos permisos (Operador)
+    override suspend fun registrar(nombre: String, email: String, password: String): ResultadoRegistro {
+        return try {
+            val creado = auth.createUserWithEmailAndPassword(email, password).await().user
+            try {
+                db.collection("usuarios").document(email).set(
+                    mapOf(
+                        "rol" to Rol.OPERADOR.name,
+                        "nombre" to nombre,
+                        "activo" to true
+                    )
+                ).await()
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                // Si no se pudo guardar la ficha se elimina la cuenta recien creada, para poder reintentar
+                try {
+                    creado?.delete()?.await()
+                } catch (ignorado: Exception) {
+                }
+                auth.signOut()
+                throw e
+            }
+            ResultadoRegistro.Exito(Rol.OPERADOR, email)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            traducirErrorRegistro(e)
+        }
+    }
+
     override fun cerrarSesion() {
         auth.signOut()
     }
@@ -84,6 +118,22 @@ class FirebaseAuthService(
             return ResultadoAuth.CredencialesInvalidas
         }
         return ResultadoAuth.Exito(rol, email)
+    }
+
+    private fun traducirErrorRegistro(e: Exception): ResultadoRegistro {
+        return when (e) {
+            is FirebaseAuthUserCollisionException -> ResultadoRegistro.CorreoEnUso
+            is FirebaseAuthWeakPasswordException -> ResultadoRegistro.ContrasenaDebil
+            is FirebaseNetworkException -> ResultadoRegistro.SinConexion
+            is FirebaseFirestoreException -> {
+                if (e.code == FirebaseFirestoreException.Code.UNAVAILABLE) {
+                    ResultadoRegistro.SinConexion
+                } else {
+                    ResultadoRegistro.ErrorInesperado
+                }
+            }
+            else -> ResultadoRegistro.ErrorInesperado
+        }
     }
 
     private fun traducirError(e: Exception): ResultadoAuth {

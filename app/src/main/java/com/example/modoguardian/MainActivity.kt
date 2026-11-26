@@ -123,8 +123,16 @@ class MainActivity : ComponentActivity() {
                     Screen.Cameras.route,
                     Screen.Events.route,
                     Screen.Alerts.route,
-                    Screen.Profile.route
+                    Screen.Profile.route,
+                    Screen.AlertDetail.route,
+                    Screen.CameraDetail.route
                 )
+                // En el detalle de una alerta o de una camara se resalta la pestana a la que pertenece
+                val rutaBarra = when (rutaActual) {
+                    Screen.AlertDetail.route -> Screen.Alerts.route
+                    Screen.CameraDetail.route -> Screen.Cameras.route
+                    else -> rutaActual
+                }
 
                 LaunchedEffect(rutaActual) {
                     if (rutaActual == Screen.Events.route) {
@@ -163,13 +171,19 @@ class MainActivity : ComponentActivity() {
                                     AvisoDatosGuardados(onReintentar = { mainViewModel.cargarEventos() })
                                 }
                                 BarraNavegacion(
-                                    rutaActual = rutaActual,
+                                    rutaActual = rutaBarra,
                                     alertasPendientes = alertasPendientes,
                                     onSeleccionar = { destino ->
-                                        navController.navigate(destino.route) {
-                                            popUpTo(Screen.Home.route) { saveState = true }
-                                            launchSingleTop = true
-                                            restoreState = true
+                                        // Si esta en el detalle de esa pestana, vuelve a su lista
+                                        val volvio = rutaActual != destino.route &&
+                                            rutaBarra == destino.route &&
+                                            navController.popBackStack(destino.route, false)
+                                        if (!volvio) {
+                                            navController.navigate(destino.route) {
+                                                popUpTo(Screen.Home.route) { saveState = true }
+                                                launchSingleTop = true
+                                                restoreState = true
+                                            }
                                         }
                                     }
                                 )
