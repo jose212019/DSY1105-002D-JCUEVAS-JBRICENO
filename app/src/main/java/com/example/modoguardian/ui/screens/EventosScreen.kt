@@ -310,6 +310,7 @@ private fun EventoItem(
     val eventoActual by rememberUpdatedState(evento)
     val alternar by rememberUpdatedState(onAlternarResuelto)
     var confirmarEliminar by remember { mutableStateOf(false) }
+    var verDetalle by remember { mutableStateOf(false) }
 
     val estadoDeslizar = rememberSwipeToDismissBoxState(
         confirmValueChange = { valor ->
@@ -336,6 +337,56 @@ private fun EventoItem(
             dismissButton = {
                 TextButton(onClick = { confirmarEliminar = false }) {
                     Text(text = "Cancelar")
+                }
+            }
+        )
+    }
+
+    if (verDetalle) {
+        AlertDialog(
+            onDismissRequest = { verDetalle = false },
+            title = { Text(text = evento.title) },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(text = evento.description)
+                    if (evento.camara.isNotBlank()) {
+                        Text(
+                            text = "C\u00e1mara: ${evento.camara}",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    Text(
+                        text = "Severidad: ${evento.severidad.etiqueta}",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = colorSeveridad(evento.severidad)
+                    )
+                    Text(
+                        text = "Estado: ${if (evento.isResolved) "Resuelto" else "Pendiente"}",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            },
+            confirmButton = {
+                if (puedeGestionar) {
+                    TextButton(onClick = {
+                        verDetalle = false
+                        onAlternarResuelto(evento)
+                    }) {
+                        Text(text = if (evento.isResolved) "Reabrir" else "Resolver")
+                    }
+                } else {
+                    TextButton(onClick = { verDetalle = false }) {
+                        Text(text = "Cerrar")
+                    }
+                }
+            },
+            dismissButton = {
+                if (puedeGestionar) {
+                    TextButton(onClick = { verDetalle = false }) {
+                        Text(text = "Cerrar")
+                    }
                 }
             }
         )
@@ -370,7 +421,10 @@ private fun EventoItem(
             }
         }
     ) {
-        Card(modifier = Modifier.fillMaxWidth()) {
+        Card(
+            onClick = { verDetalle = true },
+            modifier = Modifier.fillMaxWidth()
+        ) {
             Row(modifier = Modifier.height(IntrinsicSize.Min)) {
                 Box(
                     modifier = Modifier
