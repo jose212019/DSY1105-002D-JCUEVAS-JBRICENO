@@ -1,4 +1,4 @@
-﻿package com.example.modoguardian.ui.components
+package com.example.modoguardian.ui.components
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material.icons.Icons

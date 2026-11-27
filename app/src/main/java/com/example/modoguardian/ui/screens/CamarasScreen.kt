@@ -1,4 +1,4 @@
-﻿package com.example.modoguardian.ui.screens
+package com.example.modoguardian.ui.screens
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background

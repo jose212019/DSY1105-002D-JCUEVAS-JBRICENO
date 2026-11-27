@@ -1,4 +1,4 @@
-﻿package com.example.modoguardian.ui.components
+package com.example.modoguardian.ui.components
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.FastOutSlowInEasing

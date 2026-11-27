@@ -1,4 +1,4 @@
-﻿@file:OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
+@file:OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
 
 package com.example.modoguardian.ui.screens
 
