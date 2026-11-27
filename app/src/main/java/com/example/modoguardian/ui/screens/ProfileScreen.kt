@@ -1,4 +1,4 @@
-@file:OptIn(ExperimentalMaterial3Api::class)
+﻿@file:OptIn(ExperimentalMaterial3Api::class)
 
 package com.example.modoguardian.ui.screens
 
@@ -8,9 +8,12 @@ import android.net.Uri
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -18,28 +21,32 @@ import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.material.icons.filled.PhotoLibrary
-import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
@@ -55,7 +62,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -67,6 +77,7 @@ import com.example.modoguardian.model.ModoTema
 import com.example.modoguardian.model.Rol
 import com.example.modoguardian.navigation.Screen
 import com.example.modoguardian.ui.components.ImagenInteligente
+import com.example.modoguardian.ui.theme.BordeSutil
 import com.example.modoguardian.ui.theme.ModoGuardianTheme
 import com.example.modoguardian.viewmodel.LoginViewModel
 import com.example.modoguardian.viewmodel.MainViewModel
@@ -74,7 +85,6 @@ import com.example.modoguardian.viewmodel.PerfilViewModel
 import com.example.modoguardian.viewmodel.TemaViewModel
 import java.io.File
 
-// Perfil conectado a los ViewModels: foto (galería o cámara con permiso), historial, tema y cierre de sesión
 @Composable
 fun ProfileScreen(
     loginViewModel: LoginViewModel,
@@ -169,9 +179,11 @@ fun PerfilContenido(
     onCerrarSesion: () -> Unit
 ) {
     val nombre = email.substringBefore("@").replaceFirstChar { it.uppercase() }.ifBlank { "Guardián" }
+    val primario = MaterialTheme.colorScheme.primary
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
+        containerColor = MaterialTheme.colorScheme.background,
         contentWindowInsets = WindowInsets.systemBars.only(WindowInsetsSides.Top)
     ) { innerPadding ->
         Column(
@@ -179,45 +191,75 @@ fun PerfilContenido(
                 .padding(innerPadding)
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .padding(horizontal = 16.dp, vertical = 14.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
-            Card(modifier = Modifier.fillMaxWidth()) {
-                Column(
+            Text(text = "Perfil", style = MaterialTheme.typography.headlineMedium)
+
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(22.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                border = BorderStroke(1.dp, primario.copy(alpha = 0.25f))
+            ) {
+                Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(24.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(6.dp)
-                ) {
-                    ImagenInteligente(
-                        imagenUri = imagenUri,
-                        tamano = 112.dp,
-                        modifier = Modifier.border(3.dp, MaterialTheme.colorScheme.primary, CircleShape)
-                    )
-                    Spacer(modifier = Modifier.height(6.dp))
-                    Text(text = nombre, style = MaterialTheme.typography.titleLarge)
-                    Text(
-                        text = email,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Surface(
-                        shape = CircleShape,
-                        color = MaterialTheme.colorScheme.primaryContainer
-                    ) {
-                        Text(
-                            text = "Rol: ${rol.etiqueta}",
-                            style = MaterialTheme.typography.labelMedium,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer,
-                            modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp)
+                        .background(
+                            Brush.radialGradient(
+                                colors = listOf(primario.copy(alpha = 0.16f), Color.Transparent),
+                                radius = 420f
+                            )
                         )
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(24.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .border(1.5.dp, primario.copy(alpha = 0.35f), CircleShape)
+                                .padding(4.dp)
+                        ) {
+                            ImagenInteligente(
+                                imagenUri = imagenUri,
+                                tamano = 104.dp,
+                                modifier = Modifier.border(2.5.dp, primario, CircleShape)
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(text = nombre, style = MaterialTheme.typography.titleLarge)
+                        Text(
+                            text = email,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Surface(
+                            shape = CircleShape,
+                            color = MaterialTheme.colorScheme.primaryContainer,
+                            border = BorderStroke(1.dp, primario.copy(alpha = 0.35f))
+                        ) {
+                            Text(
+                                text = "Rol: ${rol.etiqueta}",
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp)
+                            )
+                        }
                     }
                 }
             }
 
             TituloSeccion(texto = "MIS PERMISOS")
-            Card(modifier = Modifier.fillMaxWidth()) {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(18.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                border = BorderStroke(1.dp, BordeSutil)
+            ) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -234,7 +276,7 @@ fun PerfilContenido(
                             Icon(
                                 imageVector = Icons.Filled.Check,
                                 contentDescription = null,
-                                tint = MaterialTheme.colorScheme.primary,
+                                tint = primario,
                                 modifier = Modifier.size(18.dp)
                             )
                             Spacer(modifier = Modifier.width(10.dp))
@@ -246,7 +288,12 @@ fun PerfilContenido(
 
             if (rol.puedeGestionarEventos) {
                 TituloSeccion(texto = "TRAZABILIDAD")
-                Card(modifier = Modifier.fillMaxWidth()) {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(18.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    border = BorderStroke(1.dp, BordeSutil)
+                ) {
                     FilaAccion(
                         icono = Icons.Filled.History,
                         titulo = "Historial de acciones",
@@ -257,7 +304,12 @@ fun PerfilContenido(
             }
 
             TituloSeccion(texto = "FOTO DE PERFIL")
-            Card(modifier = Modifier.fillMaxWidth()) {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(18.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                border = BorderStroke(1.dp, BordeSutil)
+            ) {
                 Column {
                     FilaAccion(
                         icono = Icons.Filled.PhotoLibrary,
@@ -265,6 +317,7 @@ fun PerfilContenido(
                         subtitulo = "Elige una imagen que ya tengas",
                         onClick = onGaleria
                     )
+                    HorizontalDivider(color = BordeSutil)
                     FilaAccion(
                         icono = Icons.Filled.PhotoCamera,
                         titulo = "Tomar Foto con Cámara",
@@ -275,8 +328,13 @@ fun PerfilContenido(
             }
 
             TituloSeccion(texto = "APARIENCIA")
-            Card(modifier = Modifier.fillMaxWidth()) {
-                Column(modifier = Modifier.padding(16.dp)) {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(18.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                border = BorderStroke(1.dp, BordeSutil)
+            ) {
+                Column(modifier = Modifier.padding(14.dp)) {
                     SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
                         val modos = ModoTema.entries
                         modos.forEachIndexed { indice, modo ->
@@ -287,7 +345,8 @@ fun PerfilContenido(
                                 colors = SegmentedButtonDefaults.colors(
                                     activeContainerColor = MaterialTheme.colorScheme.primaryContainer,
                                     activeContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                                    activeBorderColor = MaterialTheme.colorScheme.primary
+                                    activeBorderColor = primario,
+                                    inactiveBorderColor = BordeSutil
                                 ),
                                 label = { Text(text = modo.etiqueta) }
                             )
@@ -296,11 +355,13 @@ fun PerfilContenido(
                 }
             }
 
-            Button(
+            OutlinedButton(
                 onClick = onCerrarSesion,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.errorContainer,
-                    contentColor = MaterialTheme.colorScheme.onErrorContainer
+                shape = RoundedCornerShape(14.dp),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.error.copy(alpha = 0.45f)),
+                colors = ButtonDefaults.outlinedButtonColors(
+                    containerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.5f),
+                    contentColor = MaterialTheme.colorScheme.error
                 ),
                 modifier = Modifier
                     .fillMaxWidth()
@@ -312,7 +373,7 @@ fun PerfilContenido(
                     modifier = Modifier.size(18.dp)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
-                Text(text = "Cerrar sesión")
+                Text(text = "Cerrar sesión", style = MaterialTheme.typography.labelLarge)
             }
 
             Text(
@@ -320,7 +381,9 @@ fun PerfilContenido(
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 12.dp)
             )
         }
     }
@@ -337,19 +400,41 @@ private fun TituloSeccion(texto: String) {
 
 @Composable
 private fun FilaAccion(
-    icono: androidx.compose.ui.graphics.vector.ImageVector,
+    icono: ImageVector,
     titulo: String,
     subtitulo: String,
     onClick: () -> Unit
 ) {
     ListItem(
-        headlineContent = { Text(text = titulo) },
-        supportingContent = { Text(text = subtitulo) },
+        headlineContent = { Text(text = titulo, style = MaterialTheme.typography.titleSmall) },
+        supportingContent = {
+            Text(
+                text = subtitulo,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        },
         leadingContent = {
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.14f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = icono,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(20.dp)
+                )
+            }
+        },
+        trailingContent = {
             Icon(
-                imageVector = icono,
+                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary
+                tint = MaterialTheme.colorScheme.onSurfaceVariant
             )
         },
         colors = ListItemDefaults.colors(containerColor = Color.Transparent),

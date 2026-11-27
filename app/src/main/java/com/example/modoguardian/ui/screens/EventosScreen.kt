@@ -1,8 +1,9 @@
-@file:OptIn(ExperimentalMaterial3Api::class)
+﻿@file:OptIn(ExperimentalMaterial3Api::class)
 
 package com.example.modoguardian.ui.screens
 
 import android.widget.Toast
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -27,15 +28,19 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.DeleteOutline
+import androidx.compose.material.icons.filled.EventBusy
 import androidx.compose.material.icons.filled.Replay
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Videocam
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
@@ -45,6 +50,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.SwipeToDismissBox
@@ -66,11 +72,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.modoguardian.model.SecurityEvent
 import com.example.modoguardian.model.Severidad
+import com.example.modoguardian.ui.theme.BordeSutil
 import com.example.modoguardian.ui.theme.ModoGuardianTheme
 import com.example.modoguardian.viewmodel.LoginViewModel
 import com.example.modoguardian.viewmodel.MainViewModel
@@ -82,7 +90,6 @@ private enum class FiltroEventos(val etiqueta: String) {
     ALTA("Alta")
 }
 
-// Pantalla de Eventos conectada a los ViewModels: lista completa de la API con permisos según el rol
 @Composable
 fun EventosScreen(
     loginViewModel: LoginViewModel,
@@ -161,13 +168,17 @@ fun EventosContenido(
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
+        containerColor = MaterialTheme.colorScheme.background,
         contentWindowInsets = WindowInsets.systemBars.only(WindowInsetsSides.Top),
         floatingActionButton = {
             if (puedeGestionar) {
                 ExtendedFloatingActionButton(
                     onClick = { mostrarDialogo = true },
+                    shape = RoundedCornerShape(16.dp),
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary,
                     icon = { Icon(imageVector = Icons.Filled.Add, contentDescription = null) },
-                    text = { Text(text = "Nuevo evento") }
+                    text = { Text(text = "Nuevo evento", fontWeight = FontWeight.SemiBold) }
                 )
             }
         }
@@ -192,8 +203,9 @@ fun EventosContenido(
 
                 if (!puedeGestionar) {
                     Surface(
-                        shape = MaterialTheme.shapes.small,
+                        shape = RoundedCornerShape(12.dp),
                         color = MaterialTheme.colorScheme.secondaryContainer,
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.secondary.copy(alpha = 0.3f)),
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Text(
@@ -213,10 +225,19 @@ fun EventosContenido(
                         FilterChip(
                             selected = filtro == opcion,
                             onClick = { filtro = opcion },
+                            shape = CircleShape,
                             label = { Text(text = opcion.etiqueta) },
+                            border = FilterChipDefaults.filterChipBorder(
+                                enabled = true,
+                                selected = filtro == opcion,
+                                borderColor = BordeSutil,
+                                selectedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
+                            ),
                             colors = FilterChipDefaults.filterChipColors(
+                                containerColor = MaterialTheme.colorScheme.surface,
+                                labelColor = MaterialTheme.colorScheme.onSurfaceVariant,
                                 selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
-                                selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
+                                selectedLabelColor = MaterialTheme.colorScheme.primary
                             )
                         )
                     }
@@ -226,14 +247,26 @@ fun EventosContenido(
                     value = busqueda,
                     onValueChange = { busqueda = it },
                     placeholder = { Text(text = "Buscar por título, descripción o cámara") },
-                    leadingIcon = { Icon(imageVector = Icons.Filled.Search, contentDescription = null) },
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Filled.Search,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    },
                     singleLine = true,
-                    shape = MaterialTheme.shapes.small,
+                    shape = RoundedCornerShape(14.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedContainerColor = MaterialTheme.colorScheme.surface,
+                        unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                        unfocusedBorderColor = BordeSutil,
+                        focusedBorderColor = MaterialTheme.colorScheme.primary
+                    ),
                     modifier = Modifier.fillMaxWidth()
                 )
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(10.dp))
 
             when {
                 cargando -> {
@@ -263,18 +296,41 @@ fun EventosContenido(
                 }
 
                 visibles.isEmpty() -> {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(24.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Surface(
+                            shape = CircleShape,
+                            color = MaterialTheme.colorScheme.surface,
+                            border = BorderStroke(1.dp, BordeSutil),
+                            modifier = Modifier.size(64.dp)
+                        ) {
+                            Box(contentAlignment = Alignment.Center) {
+                                Icon(
+                                    imageVector = Icons.Filled.EventBusy,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.size(30.dp)
+                                )
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(12.dp))
                         Text(
                             text = "No hay eventos para este filtro.",
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            style = MaterialTheme.typography.titleSmall,
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                     }
                 }
 
                 else -> {
                     LazyColumn(
-                        contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 96.dp),
-                        verticalArrangement = Arrangement.spacedBy(10.dp)
+                        contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 104.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         items(items = visibles, key = { it.id }) { evento ->
                             EventoItem(
@@ -311,6 +367,7 @@ private fun EventoItem(
     val alternar by rememberUpdatedState(onAlternarResuelto)
     var confirmarEliminar by remember { mutableStateOf(false) }
     var verDetalle by remember { mutableStateOf(false) }
+    val colorSev = colorSeveridad(evento.severidad)
 
     val estadoDeslizar = rememberSwipeToDismissBoxState(
         confirmValueChange = { valor ->
@@ -331,7 +388,7 @@ private fun EventoItem(
                     confirmarEliminar = false
                     onEliminar(evento)
                 }) {
-                    Text(text = "Eliminar")
+                    Text(text = "Eliminar", color = MaterialTheme.colorScheme.error)
                 }
             },
             dismissButton = {
@@ -351,7 +408,7 @@ private fun EventoItem(
                     Text(text = evento.description)
                     if (evento.camara.isNotBlank()) {
                         Text(
-                            text = "C\u00e1mara: ${evento.camara}",
+                            text = "Cámara: ${evento.camara}",
                             style = MaterialTheme.typography.labelMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -359,7 +416,7 @@ private fun EventoItem(
                     Text(
                         text = "Severidad: ${evento.severidad.etiqueta}",
                         style = MaterialTheme.typography.labelMedium,
-                        color = colorSeveridad(evento.severidad)
+                        color = colorSev
                     )
                     Text(
                         text = "Estado: ${if (evento.isResolved) "Resuelto" else "Pendiente"}",
@@ -400,7 +457,7 @@ private fun EventoItem(
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .clip(MaterialTheme.shapes.medium)
+                    .clip(RoundedCornerShape(18.dp))
                     .background(MaterialTheme.colorScheme.primaryContainer)
                     .padding(horizontal = 20.dp),
                 contentAlignment = Alignment.CenterStart
@@ -423,67 +480,114 @@ private fun EventoItem(
     ) {
         Card(
             onClick = { verDetalle = true },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(18.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+            border = BorderStroke(1.dp, BordeSutil)
         ) {
             Row(modifier = Modifier.height(IntrinsicSize.Min)) {
                 Box(
                     modifier = Modifier
                         .fillMaxHeight()
-                        .width(5.dp)
-                        .background(colorSeveridad(evento.severidad))
+                        .width(4.dp)
+                        .background(colorSev)
                 )
                 Column(
                     modifier = Modifier
                         .weight(1f)
                         .padding(14.dp),
-                    verticalArrangement = Arrangement.spacedBy(6.dp)
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Row(
-                        verticalAlignment = Alignment.CenterVertically,
+                        verticalAlignment = Alignment.Top,
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Text(
                             text = evento.title,
                             style = MaterialTheme.typography.titleSmall,
-                            color = if (evento.isResolved) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface,
+                            color = if (evento.isResolved) {
+                                MaterialTheme.colorScheme.onSurfaceVariant
+                            } else {
+                                MaterialTheme.colorScheme.onSurface
+                            },
                             modifier = Modifier.weight(1f)
                         )
                         Surface(
                             shape = CircleShape,
-                            color = if (evento.isResolved) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.secondaryContainer
+                            color = if (evento.isResolved) {
+                                MaterialTheme.colorScheme.primaryContainer
+                            } else {
+                                MaterialTheme.colorScheme.secondaryContainer
+                            }
                         ) {
                             Text(
                                 text = if (evento.isResolved) "Resuelto" else "Pendiente",
                                 style = MaterialTheme.typography.labelMedium,
-                                color = if (evento.isResolved) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSecondaryContainer,
+                                color = if (evento.isResolved) {
+                                    MaterialTheme.colorScheme.onPrimaryContainer
+                                } else {
+                                    MaterialTheme.colorScheme.onSecondaryContainer
+                                },
                                 modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
                             )
                         }
                     }
+
                     Text(
                         text = evento.description,
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
+
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         if (evento.camara.isNotBlank()) {
+                            Surface(
+                                shape = RoundedCornerShape(8.dp),
+                                color = MaterialTheme.colorScheme.surfaceVariant,
+                                border = BorderStroke(1.dp, BordeSutil)
+                            ) {
+                                Row(
+                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Filled.Videocam,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        modifier = Modifier.size(13.dp)
+                                    )
+                                    Text(
+                                        text = evento.camara,
+                                        style = MaterialTheme.typography.labelMedium,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+                                }
+                            }
+                        }
+
+                        Surface(
+                            shape = RoundedCornerShape(8.dp),
+                            color = colorSev.copy(alpha = 0.14f)
+                        ) {
                             Text(
-                                text = evento.camara,
+                                text = "Severidad ${evento.severidad.etiqueta.lowercase()}",
                                 style = MaterialTheme.typography.labelMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                color = colorSev,
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
                             )
                         }
-                        Text(
-                            text = "Severidad ${evento.severidad.etiqueta.lowercase()}",
-                            style = MaterialTheme.typography.labelMedium,
-                            color = colorSeveridad(evento.severidad)
-                        )
+
                         Spacer(modifier = Modifier.weight(1f))
+
                         if (puedeGestionar) {
-                            TextButton(onClick = { onAlternarResuelto(evento) }) {
+                            TextButton(
+                                onClick = { onAlternarResuelto(evento) },
+                                contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
+                            ) {
                                 Text(text = if (evento.isResolved) "Reabrir" else "Resolver")
                             }
                             IconButton(
@@ -491,9 +595,10 @@ private fun EventoItem(
                                 modifier = Modifier.size(32.dp)
                             ) {
                                 Icon(
-                                    imageVector = Icons.Filled.Delete,
+                                    imageVector = Icons.Filled.DeleteOutline,
                                     contentDescription = "Eliminar evento",
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                    tint = MaterialTheme.colorScheme.error.copy(alpha = 0.85f),
+                                    modifier = Modifier.size(20.dp)
                                 )
                             }
                         }

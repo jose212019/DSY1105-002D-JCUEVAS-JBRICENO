@@ -1,4 +1,4 @@
-@file:OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
+﻿@file:OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
 
 package com.example.modoguardian.ui.screens
 
@@ -9,7 +9,9 @@ import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -25,6 +27,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -34,6 +37,7 @@ import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -45,6 +49,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -55,10 +60,13 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -70,19 +78,19 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.runtime.rememberCoroutineScope
 import com.example.modoguardian.R
 import com.example.modoguardian.data.GoogleSignInHelper
 import com.example.modoguardian.data.ResultadoGoogle
-import kotlinx.coroutines.launch
 import com.example.modoguardian.model.LoginErrores
 import com.example.modoguardian.model.LoginUiState
 import com.example.modoguardian.navigation.Screen
 import com.example.modoguardian.ui.components.DialogoRegistro
+import com.example.modoguardian.ui.theme.BordeSutil
 import com.example.modoguardian.ui.theme.ModoGuardianTheme
 import com.example.modoguardian.ui.utils.obtenerWindowSizeClass
 import com.example.modoguardian.viewmodel.LoginViewModel
 import com.example.modoguardian.viewmodel.MainViewModel
+import kotlinx.coroutines.launch
 
 @Composable
 fun LoginScreen(
@@ -146,7 +154,6 @@ fun LoginScreen(
     }
 }
 
-// Pantalla de login adaptable: celular en una columna, tablet y horizontal en una tarjeta con dos columnas
 @Composable
 fun LoginContenido(
     estado: LoginUiState,
@@ -158,64 +165,87 @@ fun LoginContenido(
     onGoogle: () -> Unit,
     onCrearCuenta: () -> Unit
 ) {
-    Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-        Column(
+    val glowColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.14f)
+
+    Scaffold(
+        modifier = Modifier.fillMaxSize(),
+        containerColor = MaterialTheme.colorScheme.background
+    ) { innerPadding ->
+        Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding)
-                .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            if (widthSizeClass == WindowWidthSizeClass.Compact) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(24.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    EncabezadoLogin(tamanoLogo = 96.dp)
-                    Spacer(modifier = Modifier.height(24.dp))
-                    FormularioLogin(
-                        estado = estado,
-                        onEmailChange = onEmailChange,
-                        onPasswordChange = onPasswordChange,
-                        onSimularSinConexionChange = onSimularSinConexionChange,
-                        onIniciarSesion = onIniciarSesion,
-                        onGoogle = onGoogle,
-                        onCrearCuenta = onCrearCuenta
+                .background(
+                    Brush.radialGradient(
+                        colors = listOf(glowColor, Color.Transparent),
+                        radius = 700f
                     )
-                }
-            } else {
-                Card(
-                    modifier = Modifier
-                        .widthIn(max = 900.dp)
-                        .fillMaxWidth()
-                        .padding(32.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceVariant
-                    ),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-                ) {
-                    Row(
-                        modifier = Modifier.padding(32.dp),
-                        horizontalArrangement = Arrangement.spacedBy(32.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                )
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+                    .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                if (widthSizeClass == WindowWidthSizeClass.Compact) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 20.dp, vertical = 16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        EncabezadoLogin(
-                            tamanoLogo = 140.dp,
-                            modifier = Modifier.weight(1f)
-                        )
-                        FormularioLogin(
-                            estado = estado,
-                            onEmailChange = onEmailChange,
-                            onPasswordChange = onPasswordChange,
-                            onSimularSinConexionChange = onSimularSinConexionChange,
-                            onIniciarSesion = onIniciarSesion,
-                            onGoogle = onGoogle,
-                            onCrearCuenta = onCrearCuenta,
-                            modifier = Modifier.weight(1f)
-                        )
+                        EncabezadoLogin(tamanoLogo = 92.dp)
+                        Spacer(modifier = Modifier.height(20.dp))
+                        Card(
+                            shape = RoundedCornerShape(24.dp),
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                            border = BorderStroke(1.dp, BordeSutil),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            FormularioLogin(
+                                estado = estado,
+                                onEmailChange = onEmailChange,
+                                onPasswordChange = onPasswordChange,
+                                onSimularSinConexionChange = onSimularSinConexionChange,
+                                onIniciarSesion = onIniciarSesion,
+                                onGoogle = onGoogle,
+                                onCrearCuenta = onCrearCuenta,
+                                modifier = Modifier.padding(18.dp)
+                            )
+                        }
+                    }
+                } else {
+                    Card(
+                        modifier = Modifier
+                            .widthIn(max = 900.dp)
+                            .fillMaxWidth()
+                            .padding(32.dp),
+                        shape = RoundedCornerShape(26.dp),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                        border = BorderStroke(1.dp, BordeSutil)
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(32.dp),
+                            horizontalArrangement = Arrangement.spacedBy(32.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            EncabezadoLogin(
+                                tamanoLogo = 136.dp,
+                                modifier = Modifier.weight(1f)
+                            )
+                            FormularioLogin(
+                                estado = estado,
+                                onEmailChange = onEmailChange,
+                                onPasswordChange = onPasswordChange,
+                                onSimularSinConexionChange = onSimularSinConexionChange,
+                                onIniciarSesion = onIniciarSesion,
+                                onGoogle = onGoogle,
+                                onCrearCuenta = onCrearCuenta,
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
                     }
                 }
             }
@@ -225,21 +255,22 @@ fun LoginContenido(
 
 @Composable
 private fun LogoConPulso(tamano: Dp) {
+    val primario = MaterialTheme.colorScheme.primary
     val transicion = rememberInfiniteTransition(label = "pulso")
     val escala by transicion.animateFloat(
         initialValue = 1f,
-        targetValue = 1.4f,
+        targetValue = 1.38f,
         animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 1800, easing = FastOutSlowInEasing),
+            animation = tween(durationMillis = 2000, easing = FastOutSlowInEasing),
             repeatMode = RepeatMode.Restart
         ),
         label = "escala"
     )
     val opacidad by transicion.animateFloat(
-        initialValue = 0.7f,
+        initialValue = 0.55f,
         targetValue = 0f,
         animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 1800, easing = FastOutSlowInEasing),
+            animation = tween(durationMillis = 2000, easing = FastOutSlowInEasing),
             repeatMode = RepeatMode.Restart
         ),
         label = "opacidad"
@@ -247,8 +278,14 @@ private fun LogoConPulso(tamano: Dp) {
 
     Box(
         contentAlignment = Alignment.Center,
-        modifier = Modifier.size(tamano * 1.5f)
+        modifier = Modifier.size(tamano * 1.45f)
     ) {
+        Box(
+            modifier = Modifier
+                .size(tamano * 1.28f)
+                .clip(CircleShape)
+                .background(primario.copy(alpha = 0.08f))
+        )
         Box(
             modifier = Modifier
                 .size(tamano)
@@ -257,13 +294,13 @@ private fun LogoConPulso(tamano: Dp) {
                     scaleY = escala
                     alpha = opacidad
                 }
-                .border(2.dp, MaterialTheme.colorScheme.primary, CircleShape)
+                .border(2.dp, primario, CircleShape)
         )
         Box(
             modifier = Modifier
                 .size(tamano)
-                .border(2.dp, MaterialTheme.colorScheme.primary, CircleShape)
-                .padding(6.dp)
+                .border(2.dp, primario, CircleShape)
+                .padding(5.dp)
                 .clip(CircleShape)
         ) {
             Image(
@@ -281,18 +318,38 @@ private fun EncabezadoLogin(
     tamanoLogo: Dp,
     modifier: Modifier = Modifier
 ) {
+    val primario = MaterialTheme.colorScheme.primary
+
     Column(
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         LogoConPulso(tamano = tamanoLogo)
+        Spacer(modifier = Modifier.height(6.dp))
+        Surface(
+            shape = CircleShape,
+            color = primario.copy(alpha = 0.14f),
+            border = BorderStroke(1.dp, primario.copy(alpha = 0.35f))
+        ) {
+            Row(
+                modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(7.dp)
+                        .clip(CircleShape)
+                        .background(primario)
+                )
+                Text(
+                    text = "MODOGUARDIAN",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = primario
+                )
+            }
+        }
         Spacer(modifier = Modifier.height(8.dp))
-        Text(
-            text = "MODOGUARDIAN",
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.primary
-        )
-        Spacer(modifier = Modifier.height(4.dp))
         Text(
             text = "Bienvenido, guardián",
             style = MaterialTheme.typography.headlineMedium,
@@ -308,8 +365,10 @@ private fun EncabezadoLogin(
 
 @Composable
 private fun coloresCampo() = OutlinedTextFieldDefaults.colors(
-    focusedContainerColor = MaterialTheme.colorScheme.surface,
-    unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+    focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f),
+    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f),
+    focusedBorderColor = MaterialTheme.colorScheme.primary,
+    unfocusedBorderColor = BordeSutil,
     errorContainerColor = MaterialTheme.colorScheme.surface,
     disabledContainerColor = MaterialTheme.colorScheme.surface
 )
@@ -329,7 +388,7 @@ private fun FormularioLogin(
 
     Column(
         modifier = modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+        verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         OutlinedTextField(
             value = estado.email,
@@ -342,7 +401,7 @@ private fun FormularioLogin(
             supportingText = {
                 estado.errores.email?.let { Text(text = it) }
             },
-            shape = MaterialTheme.shapes.small,
+            shape = RoundedCornerShape(14.dp),
             colors = coloresCampo(),
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Email,
@@ -371,7 +430,7 @@ private fun FormularioLogin(
                 estado.errores.password?.let { Text(text = it) }
             },
             visualTransformation = if (verPassword) VisualTransformation.None else PasswordVisualTransformation(),
-            shape = MaterialTheme.shapes.small,
+            shape = RoundedCornerShape(14.dp),
             colors = coloresCampo(),
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Password,
@@ -408,6 +467,7 @@ private fun FormularioLogin(
         Button(
             onClick = onIniciarSesion,
             enabled = !estado.isLoading,
+            shape = RoundedCornerShape(14.dp),
             modifier = Modifier
                 .fillMaxWidth()
                 .height(52.dp)
@@ -421,7 +481,7 @@ private fun FormularioLogin(
                 Spacer(modifier = Modifier.width(12.dp))
                 Text(text = "Ingresando...")
             } else {
-                Text(text = "Iniciar sesión")
+                Text(text = "Iniciar sesión", style = MaterialTheme.typography.labelLarge)
                 Spacer(modifier = Modifier.width(8.dp))
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowForward,
@@ -435,24 +495,30 @@ private fun FormularioLogin(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            HorizontalDivider(modifier = Modifier.weight(1f))
+            HorizontalDivider(modifier = Modifier.weight(1f), color = BordeSutil)
             Text(
                 text = "O continuar con",
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(horizontal = 12.dp)
             )
-            HorizontalDivider(modifier = Modifier.weight(1f))
+            HorizontalDivider(modifier = Modifier.weight(1f), color = BordeSutil)
         }
 
         OutlinedButton(
             onClick = onGoogle,
             enabled = !estado.isLoading,
+            shape = RoundedCornerShape(14.dp),
+            border = BorderStroke(1.dp, BordeSutil),
+            colors = ButtonDefaults.outlinedButtonColors(
+                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
+                contentColor = MaterialTheme.colorScheme.onSurface
+            ),
             modifier = Modifier
                 .fillMaxWidth()
                 .height(52.dp)
         ) {
-            Text(text = "Continuar con Google")
+            Text(text = "Continuar con Google", style = MaterialTheme.typography.labelLarge)
         }
 
         Row(

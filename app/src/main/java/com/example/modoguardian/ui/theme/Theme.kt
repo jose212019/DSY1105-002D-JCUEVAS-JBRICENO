@@ -1,4 +1,4 @@
-package com.example.modoguardian.ui.theme
+﻿package com.example.modoguardian.ui.theme
 
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
@@ -9,7 +9,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
-// Tema de ModoGuardian: oscuro por defecto, con colores propios en vez del color dinámico del sistema
 private val EsquemaOscuro = darkColorScheme(
     primary = VerdeGuardian,
     onPrimary = Color(0xFF00201A),
@@ -17,7 +16,7 @@ private val EsquemaOscuro = darkColorScheme(
     onPrimaryContainer = Color(0xFFB9F6E4),
     secondary = Ambar,
     onSecondary = Color(0xFF3A2500),
-    secondaryContainer = Color(0xFF4A3410),
+    secondaryContainer = Color(0xFF3D2B0E),
     onSecondaryContainer = Color(0xFFFFE0B0),
     tertiary = Color(0xFF7DB8FF),
     onTertiary = Color(0xFF00213F),
@@ -33,10 +32,10 @@ private val EsquemaOscuro = darkColorScheme(
     surfaceContainerHigh = NocheElevada,
     surfaceContainerHighest = NocheElevada,
     outline = NocheBorde,
-    outlineVariant = NocheBorde,
+    outlineVariant = BordeSutil,
     error = RojoAlerta,
     onError = Color(0xFF3B0A0A),
-    errorContainer = Color(0xFF4A1A1A),
+    errorContainer = Color(0xFF421818),
     onErrorContainer = Color(0xFFFFD6D6)
 )
 

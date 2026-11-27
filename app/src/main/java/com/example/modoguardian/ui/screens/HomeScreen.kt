@@ -1,4 +1,4 @@
-@file:OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
+﻿@file:OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
 
 package com.example.modoguardian.ui.screens
 
@@ -6,14 +6,17 @@ import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
@@ -39,7 +42,6 @@ import com.example.modoguardian.viewmodel.EstadoViewModel
 import com.example.modoguardian.viewmodel.LoginViewModel
 import com.example.modoguardian.viewmodel.MainViewModel
 
-// Home conectado a los ViewModels: observa el rol, el Modo Guardián y los eventos de la API
 @Composable
 fun HomeScreen(
     loginViewModel: LoginViewModel,
@@ -90,7 +92,6 @@ fun HomeScreen(
     }
 }
 
-// Contenido sin ViewModel: Compact usa una columna, Medium y Expanded usan dos columnas
 @Composable
 fun HomeContenido(
     rol: Rol,
@@ -111,12 +112,13 @@ fun HomeContenido(
 ) {
     Scaffold(
         modifier = Modifier.fillMaxSize(),
+        containerColor = MaterialTheme.colorScheme.background,
         contentWindowInsets = WindowInsets.systemBars.only(WindowInsetsSides.Top)
     ) { innerPadding ->
         val modifierBase = Modifier
             .fillMaxSize()
             .padding(innerPadding)
-            .padding(16.dp)
+            .padding(horizontal = 16.dp, vertical = 12.dp)
 
         if (widthSizeClass == WindowWidthSizeClass.Compact) {
             Column(
@@ -147,6 +149,7 @@ fun HomeContenido(
                     onEliminar = onEliminarEvento,
                     onAlternarResuelto = onAlternarResuelto
                 )
+                Spacer(modifier = Modifier.height(8.dp))
             }
         } else {
             Row(

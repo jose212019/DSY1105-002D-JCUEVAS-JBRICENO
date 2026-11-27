@@ -1,39 +1,52 @@
-package com.example.modoguardian.ui.components
+﻿package com.example.modoguardian.ui.components
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.DeleteOutline
+import androidx.compose.material.icons.filled.Replay
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.material3.TextButton
-import androidx.compose.foundation.layout.Row
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.modoguardian.model.Rol
 import com.example.modoguardian.model.SecurityEvent
+import com.example.modoguardian.ui.theme.BordeSutil
 
-// Colores del botón del Modo Guardián (valores ARGB completos de 8 dígitos)
-private val ColorActivo = Color(0xFF4CAF50)
+private val ColorActivo = Color(0xFF2DE0B0)
 private val ColorInactivo = Color(0xFF757575)
 
-// muestra quién inició sesión y qué puede hacer
 @Composable
 fun TarjetaRol(
     rol: Rol,
@@ -42,9 +55,11 @@ fun TarjetaRol(
 ) {
     Card(
         modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.primaryContainer
-        )
+        ),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.3f))
     ) {
         Column(
             modifier = Modifier.padding(16.dp),
@@ -82,7 +97,6 @@ fun TarjetaRol(
     }
 }
 
-
 @Composable
 fun TarjetaModoGuardian(
     estadoActivo: Boolean?,
@@ -90,14 +104,18 @@ fun TarjetaModoGuardian(
     onAlternarEstado: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-
     val colorBoton by animateColorAsState(
         targetValue = if (estadoActivo == true) ColorActivo else ColorInactivo,
         animationSpec = tween(durationMillis = 500),
         label = "colorBotonModo"
     )
 
-    Card(modifier = modifier.fillMaxWidth()) {
+    Card(
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        border = BorderStroke(1.dp, BordeSutil)
+    ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -109,7 +127,6 @@ fun TarjetaModoGuardian(
                 text = "Modo Guardián",
                 style = MaterialTheme.typography.titleMedium
             )
-
 
             if (estadoActivo == null) {
                 CircularProgressIndicator()
@@ -138,7 +155,6 @@ fun TarjetaModoGuardian(
     }
 }
 
-
 @Composable
 fun TarjetaEventos(
     eventos: List<SecurityEvent>,
@@ -163,24 +179,56 @@ fun TarjetaEventos(
         )
     }
 
-    Card(modifier = modifier.fillMaxWidth()) {
+    Card(
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        border = BorderStroke(1.dp, BordeSutil)
+    ) {
         Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            modifier = Modifier.padding(18.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Text(
-                text = "Eventos de seguridad",
-                style = MaterialTheme.typography.titleMedium
-            )
-            if (puedeGestionar) {
-                Button(onClick = { mostrarDialogo = true }) {
-                    Text(text = "Nuevo evento")
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = "Eventos de seguridad",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                if (puedeGestionar) {
+                    FilledTonalButton(
+                        onClick = { mostrarDialogo = true },
+                        shape = RoundedCornerShape(50),
+                        contentPadding = PaddingValues(horizontal = 14.dp, vertical = 6.dp),
+                        colors = ButtonDefaults.filledTonalButtonColors(
+                            containerColor = MaterialTheme.colorScheme.primaryContainer,
+                            contentColor = MaterialTheme.colorScheme.primary
+                        )
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Add,
+                            contentDescription = null,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = "Nuevo evento",
+                            style = MaterialTheme.typography.labelMedium
+                        )
+                    }
                 }
             }
+
             when {
                 cargando -> {
                     Column(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 16.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         CircularProgressIndicator()
@@ -200,23 +248,60 @@ fun TarjetaEventos(
 
                 else -> {
                     eventos.forEachIndexed { indice, evento ->
-                        if (indice > 0) HorizontalDivider()
-                        Text(
-                            text = if (evento.isResolved) "(Resuelto) ${evento.title}" else evento.title,
-                            style = MaterialTheme.typography.titleSmall,
-                            fontWeight = FontWeight.SemiBold
-                        )
-                        Text(
-                            text = evento.description,
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-                        if (puedeGestionar) {
-                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                TextButton(onClick = { onAlternarResuelto(evento) }) {
-                                    Text(text = if (evento.isResolved) "Reabrir" else "Marcar resuelto")
+                        if (indice > 0) {
+                            HorizontalDivider(color = BordeSutil)
+                        }
+                        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                            Text(
+                                text = if (evento.isResolved) "(Resuelto) ${evento.title}" else evento.title,
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.SemiBold,
+                                color = if (evento.isResolved) {
+                                    MaterialTheme.colorScheme.onSurfaceVariant
+                                } else {
+                                    MaterialTheme.colorScheme.onSurface
                                 }
-                                TextButton(onClick = { onEliminar(evento) }) {
-                                    Text(text = "Eliminar")
+                            )
+                            Text(
+                                text = evento.description,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                maxLines = 2,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                            if (puedeGestionar) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    TextButton(
+                                        onClick = { onAlternarResuelto(evento) },
+                                        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = if (evento.isResolved) Icons.Filled.Replay else Icons.Filled.Check,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(16.dp)
+                                        )
+                                        Spacer(modifier = Modifier.width(6.dp))
+                                        Text(text = if (evento.isResolved) "Reabrir" else "Marcar resuelto")
+                                    }
+                                    TextButton(
+                                        onClick = { onEliminar(evento) },
+                                        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp),
+                                        colors = ButtonDefaults.textButtonColors(
+                                            contentColor = MaterialTheme.colorScheme.error.copy(alpha = 0.85f)
+                                        )
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Filled.DeleteOutline,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(16.dp)
+                                        )
+                                        Spacer(modifier = Modifier.width(4.dp))
+                                        Text(text = "Eliminar")
+                                    }
                                 }
                             }
                         }
